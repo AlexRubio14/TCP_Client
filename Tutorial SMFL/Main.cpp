@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+#include "Map.h"
+
 #define SERVER_PORT 55000
 
 const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
@@ -28,76 +30,51 @@ void HandShake(sf::Packet& data)
 
 void main()
 {
-	sf::TcpSocket socketServer;
 
-	if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
-	{
-		std::cerr << "Error al conectar con el servidor" << std::endl;
-		return;
-	}
-	std::cout << "Conexion Al servidor" << std::endl;
+	Map* map = new Map();
+	map->PrintMap();
+	//sf::TcpSocket socketServer;
 
-	sf::Packet packet;
-	bool gameLoop = true;
-	if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
-	{
-		std::cerr << "Error al conectar con el servidor" << std::endl;
-		return;
-	}
+	//sf::Packet packet;
+	//bool gameLoop = true;
+	//if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
+	//{
+	//	std::cerr << "Error al conectar con el servidor" << std::endl;
+	//	return;
+	//}
 
-	std::cout << "Conectado con el servidor" << std::endl;
+	//std::cout << "Conectado con el servidor" << std::endl;
 
-	while (gameLoop)
-	{
-		std::string message;
-		std::cout << "Inserta mensaje para el servidor, -1 Para salir" << std::endl;
-		std::cin >> message;
+	//while (gameLoop)
+	//{
+	//	
+	//	/*if (socketServer.receive(packet) == sf::Socket::Status::Done)
+	//	{
+	//		std::string receivedMessage;
 
-		if (message == "-1")
-		{
-			std::cout << "Desocnectando..." << std::endl;
-			gameLoop = false;
-		}
-		else
-		{
-			sf::Packet packet;
-			packet << message;
-			if (socketServer.send(packet) != sf::Socket::Status::Done) 
-			{
-				std::cerr << "Error al enviar el pauqete al servidor" << std::endl;
-			}
-			else
-			{
-				std::cout << "Mensaje enviado: " << message << std::endl;
-			}
-		}
-		/*if (socketServer.receive(packet) == sf::Socket::Status::Done)
-		{
-			std::string receivedMessage;
+	//		TipoPaquete type;
 
-			TipoPaquete type;
+	//		packet >> type;
 
-			packet >> type;
+	//		switch (type)
+	//		{
+	//		case HANDSHAKE:
+	//			HandShake(packet);
+	//			break;
+	//		case LOGIN:
+	//			break;
+	//		case MOVIMIENTO:
+	//			break;
+	//		default:
+	//			break;
+	//		}
 
-			switch (type)
-			{
-			case HANDSHAKE:
-				HandShake(packet);
-				break;
-			case LOGIN:
-				break;
-			case MOVIMIENTO:
-				break;
-			default:
-				break;
-			}
+	//		packet.clear();
 
-			packet.clear();
+	//		std::cout << "Mensaje recibido del servidor: " << receivedMessage << std::endl;
+	//	}*/
+	//}
 
-			std::cout << "Mensaje recibido del servidor: " << receivedMessage << std::endl;
-		}*/
-	}
-
-	socketServer.disconnect();
-	std::cout << "Desconectado del servidor" << std::endl;
+	//socketServer.disconnect();
+	//std::cout << "Desconectado del servidor" << std::endl;
 }
