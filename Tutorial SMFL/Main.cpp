@@ -41,11 +41,13 @@ void main()
 
 	std::cout << "Conectado con el servidor" << std::endl;
 
-	packet << TipoPaquete::TEST << "Hola servidor";
+	std::string message = "Hola servidor";
+
+	packet << TipoPaquete::TEST << message;
 
 	if (socketServer.send(packet) == sf::Socket::Status::Done)
 	{
-		std::cout << "He saludado al servidor " << std::endl;
+		std::cout << "He saludado al servidor con el mensaje: " << message << std::endl;
 	}
 	else
 	{
