@@ -30,13 +30,6 @@ void main()
 {
 	sf::TcpSocket socketServer;
 
-	if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
-	{
-		std::cerr << "Error al conectar con el servidor" << std::endl;
-		return;
-	}
-	std::cout << "Conexion Al servidor" << std::endl;
-
 	sf::Packet packet;
 	bool gameLoop = true;
 	if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
@@ -55,7 +48,7 @@ void main()
 
 		if (message == "-1")
 		{
-			std::cout << "Desocnectando..." << std::endl;
+			std::cout << "Desconectando..." << std::endl;
 			gameLoop = false;
 		}
 		else
