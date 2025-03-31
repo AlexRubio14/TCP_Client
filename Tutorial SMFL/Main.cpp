@@ -6,7 +6,7 @@
 
 const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
 
-enum TipoPaquete { HANDSHAKE, LOGIN, MOVIMIENTO };
+enum TipoPaquete { HANDSHAKE, LOGIN, REGISTER, MOVIMIENTO, TEST, WAIT };
 
 sf::Packet& operator >>(sf::Packet& packet, TipoPaquete& tipo)
 {
@@ -32,6 +32,7 @@ void main()
 
 	sf::Packet packet;
 	bool gameLoop = true;
+
 	if (socketServer.connect(SERVER_IP, SERVER_PORT) != sf::Socket::Status::Done)
 	{
 		std::cerr << "Error al conectar con el servidor" << std::endl;
@@ -40,31 +41,20 @@ void main()
 
 	std::cout << "Conectado con el servidor" << std::endl;
 
+	packet << TipoPaquete::TEST << "Hola servidor";
+
+	if (socketServer.send(packet) == sf::Socket::Status::Done)
+	{
+		std::cout << "He saludado al servidor " << std::endl;
+	}
+	else
+	{
+		std::cout << "No he podido saludar al server " << std::endl;
+	}
+
 	while (gameLoop)
 	{
-		std::string message;
-		std::cout << "Inserta mensaje para el servidor, -1 Para salir" << std::endl;
-		std::cin >> message;
-
-		if (message == "-1")
-		{
-			std::cout << "Desconectando..." << std::endl;
-			gameLoop = false;
-		}
-		else
-		{
-			sf::Packet packet;
-			packet << message;
-			if (socketServer.send(packet) != sf::Socket::Status::Done) 
-			{
-				std::cerr << "Error al enviar el pauqete al servidor" << std::endl;
-			}
-			else
-			{
-				std::cout << "Mensaje enviado: " << message << std::endl;
-			}
-		}
-		/*if (socketServer.receive(packet) == sf::Socket::Status::Done)
+		if (socketServer.receive(packet) == sf::Socket::Status::Done)
 		{
 			std::string receivedMessage;
 
@@ -79,7 +69,13 @@ void main()
 				break;
 			case LOGIN:
 				break;
+			case REGISTER:
+				break;
 			case MOVIMIENTO:
+				break;
+			case TEST:
+				break;
+			case WAIT:
 				break;
 			default:
 				break;
@@ -88,9 +84,32 @@ void main()
 			packet.clear();
 
 			std::cout << "Mensaje recibido del servidor: " << receivedMessage << std::endl;
-		}*/
+		}
 	}
 
 	socketServer.disconnect();
 	std::cout << "Desconectado del servidor" << std::endl;
 }
+
+/*std::string message;
+		std::cout << "Inserta mensaje para el servidor, -1 Para salir" << std::endl;
+		std::cin >> message;
+
+		if (message == "-1")
+		{
+			std::cout << "Desconectando..." << std::endl;
+			gameLoop = false;
+		}
+		else
+		{
+			sf::Packet packet;
+			packet << message;
+			if (socketServer.send(packet) != sf::Socket::Status::Done)
+			{
+				std::cerr << "Error al enviar el paquete al servidor" << std::endl;
+			}
+			else
+			{
+				std::cout << "Mensaje enviado: " << message << std::endl;
+			}
+		}*/
