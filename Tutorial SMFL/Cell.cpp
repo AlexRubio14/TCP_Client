@@ -7,6 +7,10 @@ Cell::Cell(int _id, Color _color)
 	nextCells = new std::vector<Cell*>();
 }
 
+Cell::Cell()
+{
+}
+
 Cell::~Cell()
 {
 }
