@@ -15,10 +15,18 @@ private:
 	Color SetCellColor(int _id);
 	void CreateCells();
 	void SetNextCells();
-
+	void SetCellsPosition(sf::RenderWindow& window);
+	void SetWhiteCellsPosition(sf::Vector2f& currentPosition);
+	void SetBlueCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
+	void SetYellowCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
+	void SetRedCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
+	void SetGreenCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
+	void SetHomePositions(sf::Vector2f& currentPosition, int initId);
 public:
-	Map();
+	Map(sf::RenderWindow& window);
 	~Map();
+
+	void Update(sf::RenderWindow& window);
 
 	void PrintMap();
 };

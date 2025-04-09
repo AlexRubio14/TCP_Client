@@ -5,6 +5,8 @@
 #include "Map.h"
 
 #define SERVER_PORT 55000
+#define WIDTH 850
+#define HEIGHT 850
 
 const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
 
@@ -30,9 +32,20 @@ void HandShake(sf::Packet& data)
 
 void main()
 {
+	sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({WIDTH, HEIGHT}), "Tutorial SMFL");
 
-	Map* map = new Map();
+	Map* map = new Map(*window);
 	map->PrintMap();
+
+	while (window->isOpen())
+	{
+		map->Update(*window);
+	}
+
+
+	delete window;
+
+
 	//sf::TcpSocket socketServer;
 
 	//sf::Packet packet;
