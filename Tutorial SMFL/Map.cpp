@@ -62,11 +62,42 @@ void Map::SetNextCells()
 	cells[32]->SetNextCells(cells[71]);
 }
 
+void Map::CreateBases()
+{
+	bases.push_back(sf::CircleShape(100.f));
+	bases.push_back(sf::CircleShape(100.f));
+	bases.push_back(sf::CircleShape(100.f));
+	bases.push_back(sf::CircleShape(100.f));
+
+	for (int i = 0; i < bases.size(); i++)
+	{
+		bases[i].setOutlineThickness(2.f);
+		bases[i].setOutlineColor(sf::Color::Black);
+	}
+}
+
+void Map::CreateBoard(sf::RenderWindow& window)
+{
+	sf::Color brown (238, 208, 157);
+
+	squares.push_back(sf::RectangleShape({ 646, 646 }));
+	squares.push_back(sf::RectangleShape({ (float)window.getSize().x - 20, (float)window.getSize().y - 20 }));
+
+	squares[0].setFillColor(sf::Color::Transparent);
+	squares[0].setPosition(sf::Vector2f(100, 100));
+	squares[0].setOutlineThickness(4.f);
+	squares[0].setOutlineColor(sf::Color::Black);
+
+	squares[1].setFillColor(brown);
+	squares[1].setPosition(sf::Vector2f(10, 10));
+	squares[1].setOutlineThickness(10.f);
+	squares[1].setOutlineColor(sf::Color::Black);
+}
+
+
 void Map::SetCellsPosition(sf::RenderWindow& window)
 {
-	sf::Vector2f currentPosition;
-	currentPosition.x = window.getSize().x - 150.f;
-	currentPosition.y = window.getSize().y / 2 + 25.f;
+	sf::Vector2f currentPosition = sf::Vector2f(window.getSize().x - 150.f, window.getSize().y / 2 + 25.f);
 	
 	SetWhiteCellsPosition(currentPosition);
 	SetBlueCells(window, currentPosition);
@@ -79,8 +110,7 @@ void Map::SetWhiteCellsPosition(sf::Vector2f& currentPosition)
 {
 	for (int i = 0; i < 5; i++)
 	{
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 
 		currentPosition.x -= 50.f;
 	}
@@ -89,19 +119,16 @@ void Map::SetWhiteCellsPosition(sf::Vector2f& currentPosition)
 	{
 		currentPosition.y += 50.f;
 
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
 
 	currentPosition.x -= 50.f;
-	cells[10]->GetPosition().x = currentPosition.x;
-	cells[10]->GetPosition().y = currentPosition.y;
+	cells[10]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	currentPosition.x -= 50.f;
 
 	for (int i = 11; i < 16; i++)
 	{
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 
 		currentPosition.y -= 50.f;
 	}
@@ -110,19 +137,16 @@ void Map::SetWhiteCellsPosition(sf::Vector2f& currentPosition)
 	{
 		currentPosition.x -= 50.f;
 
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
 
 	currentPosition.y -= 50.f;
-	cells[21]->GetPosition().x = currentPosition.x;
-	cells[21]->GetPosition().y = currentPosition.y;
+	cells[21]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	currentPosition.y -= 50.f;
 
 	for (int i = 22; i < 27; i++)
 	{
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 
 		currentPosition.x += 50.f;
 	}
@@ -131,19 +155,16 @@ void Map::SetWhiteCellsPosition(sf::Vector2f& currentPosition)
 	{
 		currentPosition.y -= 50.f;
 
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
 
 	currentPosition.x += 50.f;
-	cells[32]->GetPosition().x = currentPosition.x;
-	cells[32]->GetPosition().y = currentPosition.y;
+	cells[32]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	currentPosition.x += 50.f;
 
 	for (int i = 33; i < 38; i++)
 	{
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 
 		currentPosition.y += 50.f;
 	}
@@ -152,101 +173,111 @@ void Map::SetWhiteCellsPosition(sf::Vector2f& currentPosition)
 	{
 		currentPosition.x += 50.f;
 
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
 
 	currentPosition.y += 50.f;
-	cells[43]->GetPosition().x = currentPosition.x;
-	cells[43]->GetPosition().y = currentPosition.y;
+	cells[43]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 }
 
 void Map::SetBlueCells(sf::RenderWindow& window, sf::Vector2f& currentPosition)
 {
-	for (int i = 44; i < 49; i++)
+	for (int i = 44; i < 48; i++)
 	{
 		currentPosition.x -= 50.f;
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
+	currentPosition.x -= 50.f;
+	cells[48]->SetPositionTriangles(sf::Vector2f(currentPosition.x, currentPosition.y),
+		sf::Vector2f(-25.f, -25.f), sf::Vector2f(-98.f, 48.f), sf::Vector2f(48.f, 48.f), -90);
 
 	currentPosition.x = window.getSize().x * 3 / 4;
 	currentPosition.y = window.getSize().y * 3 / 4;
 
-	SetHomePositions(currentPosition, 49);
+	SetHomePositions(currentPosition, 49, 0);
 }
 
 void Map::SetYellowCells(sf::RenderWindow& window, sf::Vector2f& currentPosition)
 {
 	currentPosition = cells[10]->GetPosition();
-	for (int i = 53; i < 58; i++)
+	for (int i = 53; i < 57; i++)
 	{
 		currentPosition.y -= 50.f;
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
+	currentPosition.y -= 50.f;
+	cells[57]->SetPositionTriangles(sf::Vector2f(currentPosition.x, currentPosition.y),
+		sf::Vector2f(25.f, -25.f), sf::Vector2f(98.f, 48.f), sf::Vector2f(-48.f, 48.f), 0);
 
 	currentPosition.x = window.getSize().x / 4;
 	currentPosition.y = window.getSize().y * 3 / 4;
 
-	SetHomePositions(currentPosition, 58);
+	SetHomePositions(currentPosition, 58, 1);
 }
 
 void Map::SetRedCells(sf::RenderWindow& window, sf::Vector2f& currentPosition)
 {
 	currentPosition = cells[21]->GetPosition();
-	for (int i = 62; i < 67; i++)
+	for (int i = 62; i < 66; i++)
 	{
 		currentPosition.x += 50.f;
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
+	currentPosition.x += 50.f;
+	cells[66]->SetPositionTriangles(sf::Vector2f(currentPosition.x, currentPosition.y),
+		sf::Vector2f(25.f, -75.f), sf::Vector2f(-48.f, 0.f), sf::Vector2f(98.f, 0.f), 90);
 
 	currentPosition.x = window.getSize().x / 4;
 	currentPosition.y = window.getSize().y / 4;
 
-	SetHomePositions(currentPosition, 67);
+	SetHomePositions(currentPosition, 67, 2);
 }
 
 void Map::SetGreenCells(sf::RenderWindow& window, sf::Vector2f& currentPosition)
 {
 	currentPosition = cells[32]->GetPosition();
-	for (int i = 71; i < 76; i++)
+	for (int i = 71; i < 75; i++)
 	{
 		currentPosition.y += 50.f;
-		cells[i]->GetPosition().x = currentPosition.x;
-		cells[i]->GetPosition().y = currentPosition.y;
+		cells[i]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
 	}
+	currentPosition.y += 50.f;
+	cells[75]->SetPositionTriangles(sf::Vector2f(currentPosition.x, currentPosition.y),
+		sf::Vector2f(-25.f, -75.f), sf::Vector2f(48.f, 0.f), sf::Vector2f(-98.f, 0.f), 180);
 
 	currentPosition.x = window.getSize().x * 3 / 4;
 	currentPosition.y = window.getSize().y / 4;
 
-	SetHomePositions(currentPosition, 76);
+	SetHomePositions(currentPosition, 76, 3);
 }
 
-void Map::SetHomePositions(sf::Vector2f& currentPosition, int initId)
+void Map::SetHomePositions(sf::Vector2f& currentPosition, int initId, int baseId)
 {
+	sf::Color baseColor = cells[initId]->GetSquare().getFillColor();
+	bases[baseId].setFillColor(baseColor);
+	bases[baseId].setPosition(sf::Vector2f(currentPosition.x - bases[baseId].getRadius(), currentPosition.y - bases[baseId].getRadius()));
+
 	currentPosition.x -= 25.f;
 	currentPosition.y -= 75.f;
-	cells[initId]->GetPosition().x = currentPosition.x;
-	cells[initId]->GetPosition().y = currentPosition.y;
+	cells[initId]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
+	cells[initId]->SetRender(false);
 	initId++;
 
 	currentPosition.x += 50.f;
 	currentPosition.y += 50.f;
-	cells[initId]->GetPosition().x = currentPosition.x;
-	cells[initId]->GetPosition().y = currentPosition.y;
+	cells[initId]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
+	cells[initId]->SetRender(false);
 	initId++;
 
 	currentPosition.x -= 100.f;
-	cells[initId]->GetPosition().x = currentPosition.x;
-	cells[initId]->GetPosition().y = currentPosition.y;
+	cells[initId]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
+	cells[initId]->SetRender(false);
 	initId++;
 
 	currentPosition.x += 50.f;
 	currentPosition.y += 50.f;
-	cells[initId]->GetPosition().x = currentPosition.x;
-	cells[initId]->GetPosition().y = currentPosition.y;
+	cells[initId]->SetPositionSquare(sf::Vector2f(currentPosition.x, currentPosition.y));
+	cells[initId]->SetRender(false);
 }
 
 void Map::PrintMap()
@@ -264,6 +295,8 @@ void Map::PrintMap()
 
 Map::Map(sf::RenderWindow& window)
 {
+	CreateBoard(window);
+	CreateBases();
 	CreateCells();
 	SetNextCells();
 	SetCellsPosition(window);
@@ -271,17 +304,26 @@ Map::Map(sf::RenderWindow& window)
 
 Map::~Map()
 {
-	
+
 }
 
 void Map::Update(sf::RenderWindow& window)
 {
-	window.clear(sf::Color(238, 208, 157));
+	window.clear();
 
-
+	Render(window);
 
 	for (int i = 0; i < cells.size(); i++)
 		cells[i]->Render(window);
 
 	window.display();
+}
+
+void Map::Render(sf::RenderWindow& window)
+{
+	for (int i = 1; i >= 0; i--)
+		window.draw(squares[i]);
+
+	for (int i = 0; i < bases.size(); i++)
+		window.draw(bases[i]);
 }

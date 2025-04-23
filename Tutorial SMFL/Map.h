@@ -11,17 +11,25 @@ class Map
 {
 private:
 	std::vector<Cell*> cells;
+
+	//Map
+	std::vector<sf::RectangleShape> squares;
+	std::vector<sf::CircleShape> bases;
+
 	
 	Color SetCellColor(int _id);
 	void CreateCells();
 	void SetNextCells();
+	void CreateBases();
+	void CreateBoard(sf::RenderWindow& window);
+	void Render(sf::RenderWindow& window);
 	void SetCellsPosition(sf::RenderWindow& window);
 	void SetWhiteCellsPosition(sf::Vector2f& currentPosition);
 	void SetBlueCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
 	void SetYellowCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
 	void SetRedCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
 	void SetGreenCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
-	void SetHomePositions(sf::Vector2f& currentPosition, int initId);
+	void SetHomePositions(sf::Vector2f& currentPosition, int initId, int baseId);
 public:
 	Map(sf::RenderWindow& window);
 	~Map();
