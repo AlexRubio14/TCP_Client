@@ -6,13 +6,13 @@
 
 const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
 
-enum TipoPaquete { HANDSHAKE, LOGIN, REGISTER, MOVIMIENTO, TEST, WAIT };
+enum PacketType { HANDSHAKE, LOGIN, REGISTER, MOVEMENT, DISCONNECT, TEST, WAIT };
 
-sf::Packet& operator >>(sf::Packet& packet, TipoPaquete& tipo)
+sf::Packet& operator >>(sf::Packet& packet, PacketType& tipo)
 {
 	int temp;
 	packet >> temp;
-	tipo = static_cast<TipoPaquete>(temp);
+	tipo = static_cast<PacketType>(temp);
 
 	return packet;
 }
@@ -41,13 +41,14 @@ void main()
 
 	std::cout << "Conectado con el servidor" << std::endl;
 
-	std::string message = "Hola servidor";
+	std::string username = "admin";
+	std::string password = "1234";
 
-	packet << TipoPaquete::TEST << message;
+	packet << PacketType::REGISTER << username << password;
 
 	if (socketServer.send(packet) == sf::Socket::Status::Done)
 	{
-		std::cout << "He saludado al servidor con el mensaje: " << message << std::endl;
+		std::cout << "He pedido registrarme al servidor con el username: " << username << std::endl << "y con la password: " << password << std::endl;
 	}
 	else
 	{
@@ -60,10 +61,9 @@ void main()
 		{
 			std::string receivedMessage;
 
-			TipoPaquete type;
+			PacketType type;
 
 			packet >> type;
-
 			switch (type)
 			{
 			case HANDSHAKE:
@@ -73,7 +73,9 @@ void main()
 				break;
 			case REGISTER:
 				break;
-			case MOVIMIENTO:
+			case MOVEMENT:
+				break;
+			case DISCONNECT:
 				break;
 			case TEST:
 				break;
@@ -82,7 +84,6 @@ void main()
 			default:
 				break;
 			}
-
 			packet.clear();
 
 			std::cout << "Mensaje recibido del servidor: " << receivedMessage << std::endl;
