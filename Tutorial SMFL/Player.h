@@ -15,7 +15,10 @@ private:
 public:
 	Player(std::string _name, sf::Color _color);
 	int ThrowDice();
+	void ControlDice();
 	void SelectToken(sf::Vector2f mousePosition);
+	void ControlInteraction(Token* token);
+	void ControlNextTurn(Token* token);
 	void Update(sf::RenderWindow& window);
 
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);

@@ -23,6 +23,27 @@ Player::Player(std::string _name, sf::Color _color)
 	}
 }
 
+void Player::ControlDice()
+{
+	diceValue = ThrowDice();
+	if (AllTokensInBase() && diceValue != 5)
+	{
+		if (diceValue == 6)
+		{
+			canThrowDice = true;
+			std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base pero vuelves a tirar" << std::endl;
+			return;
+		}
+		GAME.EndTurn();
+		std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base" << std::endl;
+		return;
+	}
+	canThrowDice = false;
+	if (!AnyTokenInBase() && diceValue == 6)
+		diceValue = 7;
+	std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue << std::endl;
+}
+
 int Player::ThrowDice()
 {
 	std::cout << std::endl;
@@ -51,73 +72,82 @@ void Player::SelectToken(sf::Vector2f mousePosition)
 
 		if (distanceSquared <= radius * radius)
 		{
-			if (diceValue == 5)
-			{
-				if (AnyTokenInBase())
-				{
-					if (!token->GetIsInGame())
-					{
-						//Forzar sacar ficha si sale 5 y hay fichas en base
-						std::cout << "Sacas la casilla de base" << std::endl;
-						diceValue = token->MoveToken(1);
-					}
-					else
-						return;
-
-				}
-				else
-				{
-					//Mover ficha
-					std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
-					diceValue = token->MoveToken(diceValue);
-				}
-			}
-			else
-			{
-				if (token->GetIsInGame())
-				{
-					//Mover ficha
-					std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
-					diceValue = token->MoveToken(diceValue);
-				}
-				else
-					return;
-			}
-
-			if (diceValue == 6 || diceValue == 7)
-			{
-				canThrowDice = true;
-				std::cout << "Vuelve a tirar" << std::endl;
-				return;
-			}
-			else if ((diceValue == 10 || diceValue == 20) && extraMoves)
-			{
-				extraMoves = false;
-				if (diceValue == 10)
-				{
-					auto it = std::find(tokens.begin(), tokens.end(), token);
-					if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
-					{
-						tokens.erase(it);
-					}
-				}
-
-				if (!AllTokensInBase())
-				{
-					std::cout << "Muevete otra vez" << std::endl;
-					return;
-				}
-				else
-				{
-					std::cout << "Pringado no sigues" << std::endl;
-					return;
-				}
-			}
-
-			GAME.EndTurn();
+			ControlInteraction(token);
+			ControlNextTurn(token);		
 			return;
 		}
 	}
+}
+
+void Player::ControlInteraction(Token* token)
+{
+	if (diceValue == 5)
+	{
+		if (AnyTokenInBase())
+		{
+			if (!token->GetIsInGame())
+			{
+				//Forzar sacar ficha si sale 5 y hay fichas en base
+				std::cout << "Sacas la casilla de base" << std::endl;
+				diceValue = token->MoveToken(1);
+			}
+			else
+				return;
+
+		}
+		else
+		{
+			//Mover ficha
+			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			diceValue = token->MoveToken(diceValue);
+		}
+	}
+	else
+	{
+		if (token->GetIsInGame())
+		{
+			//Mover ficha
+			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			diceValue = token->MoveToken(diceValue);
+		}
+		else
+			return;
+	}
+}
+
+void Player::ControlNextTurn(Token* token)
+{
+	if (diceValue == 6 || diceValue == 7)
+	{
+		canThrowDice = true;
+		std::cout << "Vuelve a tirar" << std::endl;
+		return;
+	}
+	else if ((diceValue == 10 || diceValue == 20) && extraMoves)
+	{
+		extraMoves = false;
+		if (diceValue == 10)
+		{
+			auto it = std::find(tokens.begin(), tokens.end(), token);
+			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
+			{
+				tokens.erase(it);
+			}
+		}
+
+		if (!AllTokensInBase())
+		{
+			std::cout << "Muevete otra vez" << std::endl;
+			return;
+		}
+		else
+		{
+			std::cout << "Pringado no sigues" << std::endl;
+			return;
+		}
+	}
+
+	GAME.EndTurn();
 }
 
 void Player::Update(sf::RenderWindow& window)
@@ -136,25 +166,7 @@ void Player::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 		{
 		case sf::Mouse::Button::Left:
 			if (canThrowDice)
-			{
-				diceValue = ThrowDice();
-				if (AllTokensInBase() && diceValue != 5)
-				{
-					if (diceValue == 6)
-					{
-						canThrowDice = true;
-						std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base pero vuelves a tirar"  << std::endl;
-						return;
-					}
-					GAME.EndTurn();
-					std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue <<" Pero no puede sacar una casilla de su base" << std::endl;
-					return;
-				}
-				canThrowDice = false;
-				if (!AnyTokenInBase() && diceValue == 6)
-					diceValue = 7;
-				std::cout << "Player del color: " << GetColorString() <<" Ha sacado un: " << diceValue << std::endl;
-			}	
+				ControlDice();
 			else
 				SelectToken(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
 			break;
