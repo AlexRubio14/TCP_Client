@@ -8,6 +8,7 @@ class Token
 {
 private:
 	Cell* currentCell = new Cell();
+	Cell* originCell = new Cell();
 	bool isInGame;
 	sf::Color color;
 	sf::CircleShape shape;
@@ -16,10 +17,11 @@ public:
 	Token(Cell* _currentCell, sf::Color _color);
 
 	void Render(sf::RenderWindow& window);
-	int MoveToken(int moves, bool leaveBase = false);
-	int ReturnToBase(Token* _token);
+	int MoveToken(int moves);
+	void ReturnToOriginalCell();
 
 	inline Cell* GetCurrentCell() { return currentCell; }
+	inline Cell* GetOriginCell() { return originCell; }
 	inline bool GetIsInGame() { return isInGame; }
 	inline sf::CircleShape GetShape() { return shape; }
 	inline sf::Color GetColor() { return color; }

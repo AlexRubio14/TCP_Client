@@ -35,5 +35,6 @@ public:
 	Token* TokenInPosition(Cell* currentCell);
 
 	inline Map* GetMap() { return map; }
+	inline Player* GetCurrentPlayer() { return currentPlayer; }
 };
 

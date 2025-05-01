@@ -10,6 +10,8 @@ private:
 	bool canThrowDice;
 	int diceValue;
 
+	bool extraMoves;
+
 public:
 	Player(std::string _name, sf::Color _color);
 	int ThrowDice();
@@ -24,6 +26,8 @@ public:
 
 	inline std::vector<Token*> GetTokens() { return tokens; }
 	inline std::string GetName() { return name; }
+	
 	inline void SetCanThrowDice(bool state) { canThrowDice = state; }
+	inline void SetExtraMoves(bool state) { extraMoves = state; }
 };
 

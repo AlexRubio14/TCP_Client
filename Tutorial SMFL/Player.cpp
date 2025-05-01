@@ -6,6 +6,7 @@ Player::Player(std::string _name, sf::Color _color)
 {
 	name = _name;
 	color = _color;
+	extraMoves = false;
 
 	int idToSpawn = SPAWN_BLUE;
 	if (color == sf::Color::Yellow)
@@ -58,7 +59,7 @@ void Player::SelectToken(sf::Vector2f mousePosition)
 					{
 						//Forzar sacar ficha si sale 5 y hay fichas en base
 						std::cout << "Sacas la casilla de base" << std::endl;
-						diceValue = token->MoveToken(1, true);
+						diceValue = token->MoveToken(1);
 					}
 					else
 						return;
@@ -89,8 +90,9 @@ void Player::SelectToken(sf::Vector2f mousePosition)
 				std::cout << "Vuelve a tirar" << std::endl;
 				return;
 			}
-			else if (diceValue == 10 || diceValue == 20)
+			else if ((diceValue == 10 || diceValue == 20) && extraMoves)
 			{
+				extraMoves = false;
 				if (diceValue == 10)
 				{
 					auto it = std::find(tokens.begin(), tokens.end(), token);

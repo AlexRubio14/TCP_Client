@@ -5,6 +5,7 @@
 Token::Token(Cell* _currentCell, sf::Color _color)
 {
 	currentCell = _currentCell;
+	originCell = currentCell;
 	isInGame = false;
 	color = _color;
 	shape = sf::CircleShape(TOKEN_RADIUS);
@@ -21,8 +22,14 @@ void Token::Render(sf::RenderWindow& window)
 	window.draw(shape);
 }
 
-int Token::MoveToken(int moves, bool leaveBase)
+int Token::MoveToken(int moves)
 {
+	if (currentCell == originCell)
+	{
+		moves = 1;
+		isInGame = true;
+	}
+
 	int newDiceValue = moves;
 
 	for (int i = 0; i < moves; i++)
@@ -33,6 +40,7 @@ int Token::MoveToken(int moves, bool leaveBase)
 		{
 			std::cout << "La ficha ha llegado al final" << std::endl;
 			newDiceValue = 10;
+			GAME.GetCurrentPlayer()->SetExtraMoves(true);
 			break;
 		}
 
@@ -55,41 +63,26 @@ int Token::MoveToken(int moves, bool leaveBase)
 
 		currentCell->SetTokensInCell(1);
 	}
-	if (leaveBase)
-		isInGame = true;
+
 	shape.setPosition(currentCell->SetTokenInCell());
 
 	if (currentCell->GetTokensInCell() > 1)
 	{
 		Token* token = GAME.TokenInPosition(currentCell);
 		if (token != nullptr)
-			return ReturnToBase(token);
+		{
+			token->ReturnToOriginalCell();
+			GAME.GetCurrentPlayer()->SetExtraMoves(true);
+			return 20;
+		}
 	}
 
 	return newDiceValue;
 }
 
-int Token::ReturnToBase(Token* _token)
+void Token::ReturnToOriginalCell()
 {
-	_token->SetIsInGame(false);
-
-	int idToSpawn = SPAWN_BLUE;
-	if (_token->GetColor() == sf::Color::Yellow)
-		idToSpawn += COLORED_CELLS_PER_COLOR;
-	else if (_token->GetColor() == sf::Color::Red)
-		idToSpawn += (COLORED_CELLS_PER_COLOR * 2);
-	else if (_token->GetColor() == sf::Color::Green)
-		idToSpawn += (COLORED_CELLS_PER_COLOR * 3);
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (GAME.GetMap()->GetCells()[idToSpawn - i]->GetTokensInCell() == 0)
-		{
-			_token->SetCurrentCell(GAME.GetMap()->GetCells()[idToSpawn + i]);
-			_token->GetShape().setPosition(_token->GetCurrentCell()->SetTokenInCell());
-			break;
-		}
-	}
-
-	return 20;
+	isInGame = false;
+	currentCell = originCell;
+	shape.setPosition(currentCell->SetTokenInCell());
 }
