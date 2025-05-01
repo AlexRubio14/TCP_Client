@@ -1,17 +1,18 @@
 #include "Map.h"
 #include <iostream>
 
-Color Map::SetCellColor(int _id)
+#pragma region CreateMap
+sf::Color Map::SetCellColor(int _id)
 {
 	if (_id <= WHITE_CELLS)
-		return WHITE;
+		return sf::Color::Transparent;
 	if (_id <= WHITE_CELLS + COLORED_CELLS_PER_COLOR)
-		return BLUE;
+		return sf::Color::Blue;
 	if (_id <= WHITE_CELLS + (COLORED_CELLS_PER_COLOR * 2))
-		return YELLOW;
+		return sf::Color::Yellow;
 	if (_id <= WHITE_CELLS + (COLORED_CELLS_PER_COLOR * 3))
-		return RED;
-	return GREEN;
+		return sf::Color::Red;
+	return sf::Color::Green;
 }
 
 void Map::CreateCells()
@@ -78,7 +79,7 @@ void Map::CreateBases()
 
 void Map::CreateBoard(sf::RenderWindow& window)
 {
-	sf::Color brown (238, 208, 157);
+	sf::Color brown(238, 208, 157);
 
 	squares.push_back(sf::RectangleShape({ 646, 646 }));
 	squares.push_back(sf::RectangleShape({ (float)window.getSize().x - 20, (float)window.getSize().y - 20 }));
@@ -94,11 +95,10 @@ void Map::CreateBoard(sf::RenderWindow& window)
 	squares[1].setOutlineColor(sf::Color::Black);
 }
 
-
 void Map::SetCellsPosition(sf::RenderWindow& window)
 {
 	sf::Vector2f currentPosition = sf::Vector2f(window.getSize().x - 150.f, window.getSize().y / 2 + 25.f);
-	
+
 	SetWhiteCellsPosition(currentPosition);
 	SetBlueCells(window, currentPosition);
 	SetYellowCells(window, currentPosition);
@@ -280,18 +280,7 @@ void Map::SetHomePositions(sf::Vector2f& currentPosition, int initId, int baseId
 	cells[initId]->SetRender(false);
 }
 
-void Map::PrintMap()
-{
-	for (int i = 0; i < cells.size(); i++)
-	{
-		if (cells[i]->GetNextCells().size() > 1)
-			std::cout << "ID: " << cells[i]->GetId() << "   Color: " << cells[i]->GetColor() << "   Next: " << cells[i]->GetNextCells()[0]->GetId() << " , " << cells[i]->GetNextCells()[1]->GetId() << std::endl;
-		else if(cells[i]->GetNextCells().size() > 0)
-			std::cout << "ID: " << cells[i]->GetId() << "   Color: " << cells[i]->GetColor() << "   Next: " << cells[i]->GetNextCells()[0]->GetId() << std::endl;
-		else
-			std::cout << "ID: " << cells[i]->GetId() << "   Color: " << cells[i]->GetColor() << "   Next: " << 0 << std::endl;
-	}
-}
+#pragma endregion
 
 Map::Map(sf::RenderWindow& window)
 {

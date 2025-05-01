@@ -4,27 +4,7 @@ void Cell::CreateNormalCell()
 {
 	square.setSize({ 48.f, 48.f });
 
-	switch (color)
-	{
-	case WHITE:
-		square.setFillColor(sf::Color::Transparent);
-		break;
-	case YELLOW:
-		square.setFillColor(sf::Color::Yellow);
-		break;
-	case BLUE:
-		square.setFillColor(sf::Color::Blue);
-		break;
-	case RED:
-		square.setFillColor(sf::Color::Red);
-		break;
-	case GREEN:
-		square.setFillColor(sf::Color::Green);
-		break;
-	default:
-		break;
-	}
-
+	square.setFillColor(color);
 	square.setOutlineThickness(2.f);
 	square.setOutlineColor(sf::Color::Black);
 }
@@ -38,7 +18,7 @@ void Cell::CreateSafeZone()
 	safeZone->setOutlineColor(sf::Color::Black);
 }
 
-Cell::Cell(int _id, Color _color)
+Cell::Cell(int _id, sf::Color _color)
 {
 	id = _id;
 	color = _color;

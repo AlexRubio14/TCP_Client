@@ -6,6 +6,7 @@
 #define COLORED_CELLS_PER_COLOR 9
 #define SAVE_ZONE 4
 #define SEPARATION_BETWEEN_SAVE_ZONE 10
+#define SPAWN_BLUE 49
 
 class Map
 {
@@ -17,7 +18,7 @@ private:
 	std::vector<sf::CircleShape> bases;
 
 	
-	Color SetCellColor(int _id);
+	sf::Color SetCellColor(int _id);
 	void CreateCells();
 	void SetNextCells();
 	void CreateBases();
@@ -30,12 +31,13 @@ private:
 	void SetRedCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
 	void SetGreenCells(sf::RenderWindow& window, sf::Vector2f& currentPosition);
 	void SetHomePositions(sf::Vector2f& currentPosition, int initId, int baseId);
+
 public:
 	Map(sf::RenderWindow& window);
 	~Map();
 
 	void Update(sf::RenderWindow& window);
 
-	void PrintMap();
+	inline std::vector<Cell*> GetCells() { return cells; }
 };
 

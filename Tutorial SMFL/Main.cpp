@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "Map.h"
+#include "GameManager.h"
 
 #define SERVER_PORT 55000
 #define WIDTH 850
@@ -35,16 +35,15 @@ void main()
 	sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({WIDTH, HEIGHT}), "Tutorial SMFL");
 
 	Map* map = new Map(*window);
-	map->PrintMap();
+	GAME.Init(map);
+
 
 	while (window->isOpen())
 	{
-		map->Update(*window);
+		GAME.Update(*window);
 	}
 
-
 	delete window;
-
 
 	//sf::TcpSocket socketServer;
 

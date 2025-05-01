@@ -2,20 +2,11 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
-enum Color
-{
-	WHITE,
-	YELLOW,
-	BLUE,
-	RED, 
-	GREEN
-};
-
 class Cell
 {
 private:
 	int id;
-	Color color;
+	sf::Color color;
 	std::vector<Cell*>* nextCells;
 	sf::Vector2f position;
 	sf::RectangleShape square;
@@ -26,7 +17,7 @@ private:
 	void CreateSafeZone();
 
 public:
-	Cell(int _id, Color _color);
+	Cell(int _id, sf::Color _color);
 	Cell();
 	~Cell();
 
@@ -34,10 +25,8 @@ public:
 	void SetPositionSquare(sf::Vector2f _position);
 	void SetPositionTriangles(sf::Vector2f _position, sf::Vector2f point1, sf::Vector2f point2, sf::Vector2f point3, float angle);
 
-
-
 	inline int GetId() { return id; }
-	inline Color GetColor() { return color; }
+	inline sf::Color GetColor() { return color; }
 	inline std::vector<Cell*> GetNextCells() { return *nextCells; }
 	inline sf::Vector2f& GetPosition() { return position; }
 	inline sf::RectangleShape GetSquare() { return square; }
