@@ -10,6 +10,9 @@ private:
 	Map* map;
 	std::vector<Player*> players;
 
+	Player* currentPlayer;
+	int currentPlayerIndex;
+
 	GameManager() = default;
 
 	GameManager(const GameManager&) = delete;
@@ -23,7 +26,13 @@ public:
 	}
 
 	void Init(Map* _map);
-	void Update(sf::RenderWindow& window);
+	void Update(sf::RenderWindow& window, const sf::Event& event);
+
+	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
+	void StartTurn();
+	void EndTurn();
+
+	Token* TokenInPosition(Cell* currentCell);
 
 	inline Map* GetMap() { return map; }
 };

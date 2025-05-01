@@ -32,6 +32,7 @@ void HandShake(sf::Packet& data)
 
 void main()
 {
+	srand(time(NULL));
 	sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode({WIDTH, HEIGHT}), "Tutorial SMFL");
 
 	Map* map = new Map(*window);
@@ -40,7 +41,11 @@ void main()
 
 	while (window->isOpen())
 	{
-		GAME.Update(*window);
+		while (const std::optional event = window->pollEvent())
+		{
+			GAME.Update(*window,*event);
+		}
+
 	}
 
 	delete window;

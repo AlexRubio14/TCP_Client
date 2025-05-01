@@ -298,14 +298,10 @@ Map::~Map()
 
 void Map::Update(sf::RenderWindow& window)
 {
-	window.clear();
-
 	Render(window);
 
 	for (int i = 0; i < cells.size(); i++)
 		cells[i]->Render(window);
-
-	window.display();
 }
 
 void Map::Render(sf::RenderWindow& window)
