@@ -37,15 +37,18 @@ int Token::MoveToken(int moves, bool leaveBase)
 		}
 
 		for (Cell* cells : nextCells)
+		{
 			if (cells->GetTokensInCell() == 2)
 			{
 				std::cout << "Hay una barrera delante" << std::endl;
-				return 0;
+				newDiceValue = 0;
+				break;
 			}
-
+		}
+			
 		currentCell->SetTokensInCell(-1);
 
-		if(nextCells.size() == 2 && nextCells[1]->GetColor() == color)
+		if (nextCells.size() == 2 && nextCells[1]->GetColor() == color)
 			currentCell = currentCell->GetNextCells()[1];
 		else
 			currentCell = currentCell->GetNextCells()[0];

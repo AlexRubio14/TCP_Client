@@ -24,6 +24,15 @@ Player::Player(std::string _name, sf::Color _color)
 
 int Player::ThrowDice()
 {
+	std::cout << std::endl;
+	std::cout << "Introduce 0 para numero random: ";
+	int hardcodedDice;
+	std::cin >> hardcodedDice;
+	std::cout << std::endl;
+
+	if (hardcodedDice > 0)
+		return hardcodedDice;
+
 	std::srand(static_cast<unsigned int>(std::time(nullptr)));
 	return (std::rand() % 6) + 1;
 }
@@ -82,15 +91,17 @@ void Player::SelectToken(sf::Vector2f mousePosition)
 			}
 			else if (diceValue == 10 || diceValue == 20)
 			{
-				auto it = std::find(tokens.begin(), tokens.end(), token);
-				if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
+				if (diceValue == 10)
 				{
-					tokens.erase(it);
+					auto it = std::find(tokens.begin(), tokens.end(), token);
+					if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
+					{
+						tokens.erase(it);
+					}
 				}
 
 				if (!AllTokensInBase())
 				{
-					diceValue = 0;
 					std::cout << "Muevete otra vez" << std::endl;
 					return;
 				}
