@@ -31,18 +31,14 @@ int Token::MoveToken(int moves)
 	}
 
 	int newDiceValue = moves;
+	bool hasFinished = false;
 
 	for (int i = 0; i < moves; i++)
 	{
 		std::vector<Cell*> nextCells = currentCell->GetNextCells();
 
-		if (nextCells.empty())
-		{
-			std::cout << "La ficha ha llegado al final" << std::endl;
-			newDiceValue = 10;
-			GAME.GetCurrentPlayer()->SetExtraMoves(true);
-			break;
-		}
+		if (nextCells[0]->GetNextCells().empty())
+			hasFinished = true;
 
 		Cell* cellToGo = nullptr;
 
@@ -57,10 +53,13 @@ int Token::MoveToken(int moves)
 			newDiceValue = 0;
 			break;
 		}
-			
+		
 		currentCell->AddTokensInCell(-1);
 		currentCell = cellToGo;
 		currentCell->AddTokensInCell(1);
+
+		if (hasFinished)
+			break;
 	}
 
 	shape.setPosition(currentCell->SetTokenInCell());
@@ -81,12 +80,20 @@ int Token::MoveToken(int moves)
 		}
 	}
 
+	if (hasFinished)
+	{
+		std::cout << "La ficha ha llegado al final" << std::endl;
+		newDiceValue = 10;
+		GAME.GetCurrentPlayer()->SetExtraMoves(true);
+	}
+
 	return newDiceValue;
 }
 
 void Token::ReturnToOriginalCell()
 {
 	isInGame = false;
+	currentCell->AddTokensInCell(-1);
 	currentCell = originCell;
 	shape.setPosition(currentCell->SetTokenInCell());
 }

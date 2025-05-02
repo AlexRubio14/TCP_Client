@@ -1,4 +1,6 @@
 #include "GameManager.h"
+#include "TimeManager.h"
+#include <iostream>
 
 void GameManager::Init(Map* _map)
 {
@@ -21,6 +23,12 @@ void GameManager::Init(Map* _map)
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 {
+	if (TIME.IsTurnTimeOver())
+	{
+		std::cout << "Se acabó el tiempo, cambio de turno";
+		EndTurn();
+	}
+
 	window.clear();
 
 	map->Update(window);
@@ -46,6 +54,7 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 void GameManager::StartTurn()
 {
 	currentPlayer->SetCanThrowDice(true);
+	TIME.StartTurn();
 }
 
 void GameManager::EndTurn()

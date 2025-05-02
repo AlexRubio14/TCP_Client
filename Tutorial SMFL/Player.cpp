@@ -91,12 +91,15 @@ bool Player::ControlInteraction(Token* token)
 		diceValue = token->MoveToken(diceValue);
 		return true;
 	}
-	else if (diceValue == 6 || diceValue == 7 && HasTokensInSameCell() && token->GetCurrentCell()->GetTokensInCell() > 1)
+	else if ((diceValue == 6 || diceValue == 7) && HasTokensInSameCell())
 	{
-		//Forzar mover la barrera
-		std::cout << "Rompes la barrera" << std::endl;
-		diceValue = token->MoveToken(diceValue);
-		return true;
+		if (token->GetCurrentCell()->GetTokensInCell() > 1)
+		{
+			std::cout << "Rompes la barrera" << std::endl;
+			diceValue = token->MoveToken(diceValue);
+			return true;
+		}
+		return false;
 	}
 	else
 	{
@@ -105,7 +108,7 @@ bool Player::ControlInteraction(Token* token)
 			//Mover ficha
 			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
 			diceValue = token->MoveToken(diceValue);
-			return false;
+			return true;
 		}
 		return false;
 	}
@@ -128,8 +131,12 @@ void Player::ControlNextTurn(Token* token)
 			auto it = std::find(tokens.begin(), tokens.end(), token);
 			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
 			{
+				token->GetCurrentCell()->AddTokensInCell(-1);
 				tokens.erase(it);
-				//Aqui comprobar que si no quedan token victoria para el currentPlayer
+				if (tokens.empty())
+				{
+					std::cout << "Has ganado" << std::endl;
+				}
 			}
 		}
 
