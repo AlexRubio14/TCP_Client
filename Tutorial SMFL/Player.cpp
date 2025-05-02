@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "GameManager.h"
 #include <iostream>
+#include "SceneManager.h"
 
 Player::Player(std::string _name, sf::Color _color)
 {
@@ -136,6 +137,7 @@ void Player::ControlNextTurn(Token* token)
 				if (tokens.empty())
 				{
 					std::cout << "Has ganado" << std::endl;
+					SCENE.ChangeScene(new LobbyScene());
 				}
 			}
 		}

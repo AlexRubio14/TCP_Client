@@ -18,6 +18,10 @@ void GameManager::Init(Map* _map)
 
 	currentPlayerIndex = 0;
 	currentPlayer = players[currentPlayerIndex];
+
+	for (int i = 0; i < players.size(); i++)
+		map->SetName(i, players[i]->GetName());
+
 	StartTurn();
 }
 
@@ -54,6 +58,7 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 void GameManager::StartTurn()
 {
 	currentPlayer->SetCanThrowDice(true);
+	currentPlayer->ResetDiceValue();
 	TIME.StartTurn();
 }
 

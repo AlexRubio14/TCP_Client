@@ -16,12 +16,14 @@ private:
 	//Map
 	std::vector<sf::RectangleShape> squares;
 	std::vector<sf::CircleShape> bases;
-
+	std::vector<sf::Text*> names;
+	sf::Font font;
 	
 	sf::Color SetCellColor(int _id);
 	void CreateCells();
 	void SetNextCells();
 	void CreateBases();
+	void SetPlayersName();
 	void CreateBoard(sf::RenderWindow& window);
 	void Render(sf::RenderWindow& window);
 	void SetCellsPosition(sf::RenderWindow& window);
@@ -37,7 +39,8 @@ public:
 	~Map();
 
 	void Update(sf::RenderWindow& window);
-
+	
 	inline std::vector<Cell*> GetCells() { return cells; }
+	inline void SetName(int id, std::string name) { names[id]->setString(name); }
 };
 

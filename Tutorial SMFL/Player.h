@@ -33,5 +33,6 @@ public:
 	
 	inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
 	inline void SetExtraMoves(const bool state) { extraMoves = state; }
+	inline void ResetDiceValue() { diceValue = 0; }
 };
 

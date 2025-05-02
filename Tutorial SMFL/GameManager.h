@@ -36,5 +36,6 @@ public:
 
 	inline Map* GetMap() { return map; }
 	inline Player* GetCurrentPlayer() { return currentPlayer; }
+	inline std::vector<Player*> GetPlayers() { return players; }
 };
 
