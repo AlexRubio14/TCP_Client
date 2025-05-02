@@ -30,6 +30,6 @@ void HandShake(sf::Packet& data)
 void main()
 {
 	srand(time(NULL));
-	SCENE.InitScenes(new GameScene());
+	SCENE.InitScenes(new RegisterScene());
 	SCENE.Update();
 }
