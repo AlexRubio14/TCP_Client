@@ -23,7 +23,7 @@ public:
 	inline Cell* GetCurrentCell() { return currentCell; }
 	inline Cell* GetOriginCell() { return originCell; }
 	inline bool GetIsInGame() { return isInGame; }
-	inline sf::CircleShape GetShape() { return shape; }
+	inline sf::CircleShape& GetShape() { return shape; }
 	inline sf::Color GetColor() { return color; }
 	inline void SetIsInGame(bool state) { isInGame = state; }
 	inline void SetCurrentCell(Cell* _currentCell) { currentCell = currentCell; }

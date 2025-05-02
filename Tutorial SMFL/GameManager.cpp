@@ -55,16 +55,13 @@ void GameManager::EndTurn()
 	StartTurn();
 }
 
-Token* GameManager::TokenInPosition(Cell* currentCell)
+Token* GameManager::TokenInPosition(Token* tokenChecked)
 {
 	for (Player* player : players)
 	{
-		if (player == currentPlayer)
-			continue;
-
 		for (Token* token : player->GetTokens())
 		{
-			if (token->GetCurrentCell() == currentCell)
+			if (token->GetCurrentCell() == tokenChecked->GetCurrentCell() && token != tokenChecked)
 				return token;
 		}
 	}

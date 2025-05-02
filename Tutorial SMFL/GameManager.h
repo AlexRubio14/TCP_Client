@@ -32,7 +32,7 @@ public:
 	void StartTurn();
 	void EndTurn();
 
-	Token* TokenInPosition(Cell* currentCell);
+	Token* TokenInPosition(Token* tokenChecked);
 
 	inline Map* GetMap() { return map; }
 	inline Player* GetCurrentPlayer() { return currentPlayer; }

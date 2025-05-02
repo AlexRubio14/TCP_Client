@@ -14,7 +14,7 @@ Token::Token(Cell* _currentCell, sf::Color _color)
 	shape.setOrigin(sf::Vector2f(shape.getRadius(), shape.getRadius()));
 	shape.setOutlineThickness(2.f);
 	shape.setOutlineColor(sf::Color::Black);
-	currentCell->SetTokensInCell(1);
+	currentCell->AddTokensInCell(1);
 }
 
 void Token::Render(sf::RenderWindow& window)
@@ -44,36 +44,40 @@ int Token::MoveToken(int moves)
 			break;
 		}
 
-		for (Cell* cells : nextCells)
-		{
-			if (cells->GetTokensInCell() == 2)
-			{
-				std::cout << "Hay una barrera delante" << std::endl;
-				newDiceValue = 0;
-				break;
-			}
-		}
-			
-		currentCell->SetTokensInCell(-1);
+		Cell* cellToGo = nullptr;
 
 		if (nextCells.size() == 2 && nextCells[1]->GetColor() == color)
-			currentCell = currentCell->GetNextCells()[1];
+			cellToGo = currentCell->GetNextCells()[1];
 		else
-			currentCell = currentCell->GetNextCells()[0];
-
-		currentCell->SetTokensInCell(1);
+			cellToGo = currentCell->GetNextCells()[0];
+		
+		if (cellToGo->GetTokensInCell() == 2)
+		{
+			std::cout << "Hay una barrera delante" << std::endl;
+			newDiceValue = 0;
+			break;
+		}
+			
+		currentCell->AddTokensInCell(-1);
+		currentCell = cellToGo;
+		currentCell->AddTokensInCell(1);
 	}
 
 	shape.setPosition(currentCell->SetTokenInCell());
 
 	if (currentCell->GetTokensInCell() > 1)
 	{
-		Token* token = GAME.TokenInPosition(currentCell);
-		if (token != nullptr)
+		Token* token = GAME.TokenInPosition(this);
+		if (token->GetColor() != color)
 		{
 			token->ReturnToOriginalCell();
 			GAME.GetCurrentPlayer()->SetExtraMoves(true);
 			return 20;
+		}
+		else if (token != nullptr)
+		{
+			shape.setPosition(currentCell->SetTokenInCell(1));
+			token->GetShape().setPosition(currentCell->SetTokenInCell(3));
 		}
 	}
 
