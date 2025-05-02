@@ -17,7 +17,7 @@ public:
 	int ThrowDice();
 	void ControlDice();
 	void SelectToken(sf::Vector2f mousePosition);
-	void ControlInteraction(Token* token);
+	bool ControlInteraction(Token* token);
 	void ControlNextTurn(Token* token);
 	void Update(sf::RenderWindow& window);
 
@@ -26,11 +26,12 @@ public:
 
 	bool AllTokensInBase();
 	bool AnyTokenInBase();
+	bool HasTokensInSameCell() const;
 
-	inline std::vector<Token*> GetTokens() { return tokens; }
-	inline std::string GetName() { return name; }
+	inline std::vector<Token*> GetTokens() const { return tokens; }
+	inline std::string GetName() const { return name; }
 	
-	inline void SetCanThrowDice(bool state) { canThrowDice = state; }
-	inline void SetExtraMoves(bool state) { extraMoves = state; }
+	inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
+	inline void SetExtraMoves(const bool state) { extraMoves = state; }
 };
 

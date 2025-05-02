@@ -63,14 +63,13 @@ void Player::SelectToken(sf::Vector2f mousePosition)
 
 		if (distanceSquared <= radius * radius)
 		{
-			ControlInteraction(token);
-			ControlNextTurn(token);		
-			return;
+			if(ControlInteraction(token))
+				ControlNextTurn(token);		
 		}
 	}
 }
 
-void Player::ControlInteraction(Token* token)
+bool Player::ControlInteraction(Token* token)
 {
 	if (diceValue == 5)
 	{
@@ -81,17 +80,26 @@ void Player::ControlInteraction(Token* token)
 				//Forzar sacar ficha si sale 5 y hay fichas en base
 				std::cout << "Sacas la casilla de base" << std::endl;
 				diceValue = token->MoveToken(1);
+				return true;
 			}
 			else
-				return;
+				return false;
 
 		}
-		else
+		//Mover ficha
+		std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+		diceValue = token->MoveToken(diceValue);
+		return true;
+	}
+	else if ((diceValue == 6 || diceValue == 7) && HasTokensInSameCell())
+	{
+		if (token->GetCurrentCell()->GetTokensInCell() > 1)
 		{
-			//Mover ficha
-			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			std::cout << "Rompes la barrera" << std::endl;
 			diceValue = token->MoveToken(diceValue);
+			return true;
 		}
+		return false;
 	}
 	else
 	{
@@ -100,9 +108,9 @@ void Player::ControlInteraction(Token* token)
 			//Mover ficha
 			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
 			diceValue = token->MoveToken(diceValue);
+			return true;
 		}
-		else
-			return;
+		return false;
 	}
 }
 
@@ -123,8 +131,12 @@ void Player::ControlNextTurn(Token* token)
 			auto it = std::find(tokens.begin(), tokens.end(), token);
 			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
 			{
+				token->GetCurrentCell()->AddTokensInCell(-1);
 				tokens.erase(it);
-				//Aqui comprobar que si no quedan token victoria para el currentPlayer
+				if (tokens.empty())
+				{
+					std::cout << "Has ganado" << std::endl;
+				}
 			}
 		}
 
@@ -225,6 +237,18 @@ bool Player::AnyTokenInBase()
 		if (!token->GetIsInGame())
 			return true;
 
+	return false;
+}
+
+bool Player::HasTokensInSameCell() const
+{
+	for (int i = 0; i < tokens.size(); ++i) {
+		for (int j = i + 1; j < tokens.size(); ++j) {
+			if (tokens[i]->GetCurrentCell() == tokens[j]->GetCurrentCell()) {
+				return true;
+			}
+		}
+	}
 	return false;
 }
 

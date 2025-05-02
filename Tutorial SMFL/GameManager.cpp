@@ -1,4 +1,6 @@
 #include "GameManager.h"
+#include "TimeManager.h"
+#include <iostream>
 
 void GameManager::Init(Map* _map)
 {
@@ -21,6 +23,12 @@ void GameManager::Init(Map* _map)
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 {
+	if (TIME.IsTurnTimeOver())
+	{
+		std::cout << "Se acabó el tiempo, cambio de turno";
+		EndTurn();
+	}
+
 	window.clear();
 
 	map->Update(window);
@@ -46,6 +54,7 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 void GameManager::StartTurn()
 {
 	currentPlayer->SetCanThrowDice(true);
+	TIME.StartTurn();
 }
 
 void GameManager::EndTurn()
@@ -55,16 +64,13 @@ void GameManager::EndTurn()
 	StartTurn();
 }
 
-Token* GameManager::TokenInPosition(Cell* currentCell)
+Token* GameManager::TokenInPosition(Token* tokenChecked)
 {
 	for (Player* player : players)
 	{
-		if (player == currentPlayer)
-			continue;
-
 		for (Token* token : player->GetTokens())
 		{
-			if (token->GetCurrentCell() == currentCell)
+			if (token->GetCurrentCell() == tokenChecked->GetCurrentCell() && token != tokenChecked)
 				return token;
 		}
 	}

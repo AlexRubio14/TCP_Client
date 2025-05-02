@@ -68,12 +68,20 @@ void Cell::SetPositionTriangles(sf::Vector2f _position, sf::Vector2f point1, sf:
 	safeZone->setPosition(position);
 }
 
-sf::Vector2f& Cell::SetTokenInCell()
+sf::Vector2f& Cell::SetTokenInCell(const float quotient)
 {
 	sf::Vector2f _position = position;
-	_position.x += square.getSize().x / 2;
-	_position.y += square.getSize().y / 2;
-
+	if (quotient == -1)
+	{
+		_position.x += square.getSize().x / 2;
+		_position.y += square.getSize().y / 2;
+	}
+	else
+	{
+		_position.x += square.getSize().x * quotient / 4;
+		_position.y += square.getSize().y * quotient / 4;
+	}
+	
 	return _position;
 }
 
