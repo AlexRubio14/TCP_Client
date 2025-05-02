@@ -25,13 +25,13 @@ Player::Player(std::string _name, sf::Color _color)
 
 void Player::ControlDice()
 {
-	diceValue = ThrowDice();
 	if (AllTokensInBase() && diceValue != 5)
 	{
 		if (diceValue == 6)
 		{
 			canThrowDice = true;
 			std::cout << "Player del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base pero vuelves a tirar" << std::endl;
+			diceValue = 0;
 			return;
 		}
 		GAME.EndTurn();
@@ -46,15 +46,6 @@ void Player::ControlDice()
 
 int Player::ThrowDice()
 {
-	std::cout << std::endl;
-	std::cout << "Introduce 0 para numero random: ";
-	int hardcodedDice;
-	std::cin >> hardcodedDice;
-	std::cout << std::endl;
-
-	if (hardcodedDice > 0)
-		return hardcodedDice;
-
 	std::srand(static_cast<unsigned int>(std::time(nullptr)));
 	return (std::rand() % 6) + 1;
 }
@@ -121,6 +112,7 @@ void Player::ControlNextTurn(Token* token)
 	{
 		canThrowDice = true;
 		std::cout << "Vuelve a tirar" << std::endl;
+		diceValue = 0;
 		return;
 	}
 	else if ((diceValue == 10 || diceValue == 20) && extraMoves)
@@ -132,6 +124,7 @@ void Player::ControlNextTurn(Token* token)
 			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
 			{
 				tokens.erase(it);
+				//Aqui comprobar que si no quedan token victoria para el currentPlayer
 			}
 		}
 
@@ -143,10 +136,10 @@ void Player::ControlNextTurn(Token* token)
 		else
 		{
 			std::cout << "Pringado no sigues" << std::endl;
-			return;
 		}
 	}
 
+	diceValue = 0;
 	GAME.EndTurn();
 }
 
@@ -166,12 +159,42 @@ void Player::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 		{
 		case sf::Mouse::Button::Left:
 			if (canThrowDice)
+			{
+				diceValue = ThrowDice();
 				ControlDice();
+			}
 			else
 				SelectToken(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
 			break;
 		}
 	}
+
+	if (const sf::Event::TextEntered* text = event.getIf<sf::Event::TextEntered>())
+	{
+		if (canThrowDice)
+		{
+			char c = static_cast<char>(text->unicode);
+
+			if (std::isdigit(c)) 
+			{
+				diceValue += (c - '0');
+			}
+		}
+	}
+
+	if (const sf::Event::KeyPressed* keyPressed = event.getIf<sf::Event::KeyPressed>())
+	{
+		if (canThrowDice)
+		{
+			switch (keyPressed->code)
+			{
+			case sf::Keyboard::Key::Enter:
+				ControlDice();
+				break;
+			}
+		}	
+	}
+
 }
 
 std::string Player::GetColorString()
