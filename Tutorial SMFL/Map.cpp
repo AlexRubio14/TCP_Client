@@ -1,5 +1,7 @@
 #include "Map.h"
 #include <iostream>
+#include "GameManager.h"
+#include "SceneManager.h"
 
 #pragma region CreateMap
 sf::Color Map::SetCellColor(int _id)
@@ -77,6 +79,35 @@ void Map::CreateBases()
 	}
 }
 
+void Map::SetPlayersName()
+{
+	font = SCENE.GetCurrentScene()->GetFont();
+	sf::RectangleShape square = squares[0];
+
+	for (int i = 0; i< 4; i++)
+	{
+		names.push_back(new sf::Text(font));
+		names[i]->setFillColor(sf::Color::Black);
+		names[i]->setString(" ");
+	}
+
+	names[0]->setPosition(sf::Vector2f(
+		square.getPosition().x - names[0]->getLocalBounds().position.x,
+		(square.getPosition().y/1.15f) - names[0]->getLocalBounds().position.y));
+
+	names[1]->setPosition(sf::Vector2f(
+		square.getPosition().x + square.getSize().x - square.getSize().x/2.65 - names[1]->getLocalBounds().position.x,
+		(square.getPosition().y / 1.15f) - names[1]->getLocalBounds().position.y));
+	
+	names[2]->setPosition(sf::Vector2f(
+		square.getPosition().x + square.getSize().x - square.getSize().x / 2.65 - names[2]->getLocalBounds().position.x,
+		square.getPosition().y + square.getSize().y));
+
+	names[3]->setPosition(sf::Vector2f(
+		square.getPosition().x - names[3]->getLocalBounds().position.x,
+		square.getPosition().y + square.getSize().y));
+}
+
 void Map::CreateBoard(sf::RenderWindow& window)
 {
 	sf::Color brown(238, 208, 157);
@@ -93,6 +124,8 @@ void Map::CreateBoard(sf::RenderWindow& window)
 	squares[1].setPosition(sf::Vector2f(10, 10));
 	squares[1].setOutlineThickness(10.f);
 	squares[1].setOutlineColor(sf::Color::Black);
+
+	SetPlayersName();
 }
 
 void Map::SetCellsPosition(sf::RenderWindow& window)
@@ -289,6 +322,7 @@ Map::Map(sf::RenderWindow& window)
 	CreateCells();
 	SetNextCells();
 	SetCellsPosition(window);
+	SetPlayersName();
 }
 
 Map::~Map()
@@ -311,4 +345,7 @@ void Map::Render(sf::RenderWindow& window)
 
 	for (int i = 0; i < bases.size(); i++)
 		window.draw(bases[i]);
+
+	for (int i = 0; i < names.size(); i++)
+		window.draw(*names[i]);
 }

@@ -23,4 +23,6 @@ public:
     virtual void update(sf::RenderWindow& window, const sf::Event& event) = 0;
     virtual void HandleEvent(sf::RenderWindow& window, const sf::Event& event);
     virtual void DetectRectangle(sf::Vector2f mousePosition) = 0;
+
+    inline sf::Font GetFont() { return font; }
 };

@@ -16,6 +16,10 @@ void GameManager::Init(Map* _map)
 
 	currentPlayerIndex = 0;
 	currentPlayer = players[currentPlayerIndex];
+
+	for (int i = 0; i < players.size(); i++)
+		map->SetName(i, players[i]->GetName());
+
 	StartTurn();
 }
 

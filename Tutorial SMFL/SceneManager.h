@@ -28,7 +28,9 @@ public:
 
 	void InitScenes(Scene* scene);
 	void ChangeScene(Scene* scene);
-
+	
 	void Update();
+
+	inline Scene* GetCurrentScene() { return currentScene; }
 };
 
