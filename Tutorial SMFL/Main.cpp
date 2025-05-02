@@ -6,7 +6,7 @@
 
 const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
 
-enum PacketType { HANDSHAKE, LOGIN, REGISTER, MOVEMENT, DISCONNECT, TEST, WAIT };
+enum PacketType { HANDSHAKE, LOGIN, LOGIN_SUCCESS, LOGIN_ERROR, REGISTER, REGISTER_SUCCES, REGISTER_ERROR, MOVEMENT, DISCONNECT, TEST, WAIT };
 
 sf::Packet& operator >>(sf::Packet& packet, PacketType& tipo)
 {
@@ -22,6 +22,34 @@ void HandShake(sf::Packet& data)
 	data >> message;
 
 	std::cout << "Mensaje recibido del servidor: " << message << std::endl;
+}
+
+void RegisterError(sf::Packet& data)
+{
+	std::string message;
+	data >> message;
+	std::cout << "Error al registrarse: " << message << std::endl;
+}
+
+void RegisterSuccess(sf::Packet& data)
+{
+	std::string message;
+	data >> message;
+	std::cout << "Registro exitoso: " << message << std::endl;
+}
+
+void LoginError(sf::Packet& data)
+{
+	std::string message;
+	data >> message;
+	std::cout << "Error al iniciar sesion: " << message << std::endl;
+}
+
+void LoginSuccess(sf::Packet& data)
+{
+	std::string message;
+	data >> message;
+	std::cout << "Inicio de sesion exitoso: " << message << std::endl;
 }
 
  // ----------------------------------- Client -----------------------------------
@@ -41,7 +69,7 @@ void main()
 
 	std::cout << "Conectado con el servidor" << std::endl;
 
-	std::string username = "admin";
+	std::string username = "admin26";
 	std::string password = "1234";
 
 	packet << PacketType::REGISTER << username << password;
@@ -55,6 +83,18 @@ void main()
 		std::cout << "No he podido saludar al server " << std::endl;
 	}
 
+	/*std::string message = "Hola, soy el nuevo cliente";
+	packet << PacketType::HANDSHAKE << message;
+
+	if (socketServer.send(packet) == sf::Socket::Status::Done)
+	{
+		std::cout << "He saludado al server: " << message << std::endl;
+	}
+	else
+	{
+		std::cout << "No he podido saludar al server " << std::endl;
+	}*/
+
 	while (gameLoop)
 	{
 		if (socketServer.receive(packet) == sf::Socket::Status::Done)
@@ -64,14 +104,28 @@ void main()
 			PacketType type;
 
 			packet >> type;
+
 			switch (type)
 			{
 			case HANDSHAKE:
 				HandShake(packet);
+
 				break;
 			case LOGIN:
 				break;
+			case LOGIN_SUCCESS:
+				LoginSuccess(packet);
+				break;
+			case LOGIN_ERROR:
+				LoginError(packet);
+				break;
 			case REGISTER:
+				break;
+			case REGISTER_SUCCES:
+				RegisterSuccess(packet);
+				break;
+			case REGISTER_ERROR:
+				RegisterError(packet);
 				break;
 			case MOVEMENT:
 				break;
@@ -84,9 +138,8 @@ void main()
 			default:
 				break;
 			}
-			packet.clear();
 
-			std::cout << "Mensaje recibido del servidor: " << receivedMessage << std::endl;
+			packet.clear();
 		}
 	}
 
