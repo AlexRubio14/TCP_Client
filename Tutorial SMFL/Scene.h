@@ -1,0 +1,26 @@
+#pragma once
+#include <iostream>
+#include <SFML/Graphics.hpp>
+
+class Scene
+{
+protected:
+    sf::Text* currentText;
+    std::string inputText;
+    sf::Font font;
+    const std::size_t maxLengthName = 12;
+    const std::size_t maxLengthPasword = 12;
+    const std::size_t idMax = 5;
+
+public:
+    virtual ~Scene() = default;
+    Scene();  
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
+
+    virtual void enter(sf::RenderWindow& window) = 0;
+    virtual void exit() = 0;
+    virtual void update(sf::RenderWindow& window, const sf::Event& event) = 0;
+    virtual void HandleEvent(sf::RenderWindow& window, const sf::Event& event);
+    virtual void DetectRectangle(sf::Vector2f mousePosition) = 0;
+};

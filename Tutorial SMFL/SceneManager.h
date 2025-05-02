@@ -1,0 +1,34 @@
+#pragma once
+#include "RegisterScene.h"
+#include "LobbyScene.h"
+#include "GameScene.h"
+
+#define SCENE SceneManager::Instance()
+#define WIDTH 850
+#define HEIGHT 850
+
+class SceneManager
+{
+private:
+	SceneManager() = default;
+
+	SceneManager(const SceneManager&) = delete;
+	SceneManager& operator =(const SceneManager&) = delete;
+
+	Scene* currentScene;
+
+	sf::RenderWindow* window;
+
+public:
+	inline static SceneManager& Instance()
+	{
+		static SceneManager manager;
+		return manager;
+	}
+
+	void InitScenes(Scene* scene);
+	void ChangeScene(Scene* scene);
+
+	void Update();
+};
+
