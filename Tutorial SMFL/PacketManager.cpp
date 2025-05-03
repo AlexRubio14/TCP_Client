@@ -2,6 +2,7 @@
 #include <iostream>
 #include "EventManager.h"
 #include "NetworkManager.h"
+#include "SceneManager.h"
 
 void PacketManager::HandleHandshake(sf::Packet& packet)
 {
@@ -39,23 +40,26 @@ void PacketManager::Init()
 		HandleHandshake(customPacket.packet);
 		});
 
-	EVENT_MANAGER.Subscribe(TEST, [this](std::string guid, CustomPacket& customPacket) {
-		HandleTest(customPacket.packet);
-		});
-
-	EVENT_MANAGER.Subscribe(REGISTER, [](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(REGISTER, [this](std::string guid, CustomPacket& customPacket) {
 		std::string username;
 		std::string password;
 		customPacket.packet >> username >> password;
 
+		SendPacketToServer(customPacket);
+
 		});
 
 	EVENT_MANAGER.Subscribe(REGISTER_ERROR, [this](std::string guid, CustomPacket& customPacket) {
-			//Error al registrarse
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+		
+		std::cout << "Register error: " << responseMessage << std::endl;
 		});
 
 	EVENT_MANAGER.Subscribe(REGISTER_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
-			//Mandarlo al Lobby
+		std::cout << "Register succes" << std::endl;
+		SCENE.ChangeScene(new LobbyScene());
 		});
 
 	EVENT_MANAGER.Subscribe(LOGIN, [this](std::string guid, CustomPacket& customPacket) {
@@ -64,15 +68,63 @@ void PacketManager::Init()
 		std::string password;
 		customPacket.packet >> username >> password;
 
+		SendPacketToServer(customPacket);
 		});
 
 	EVENT_MANAGER.Subscribe(LOGIN_ERROR, [this](std::string guid, CustomPacket& customPacket) {
-		//Error al logearse
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+
+		std::cout << "Login error: " << responseMessage << std::endl;
 
 		});
 
 	EVENT_MANAGER.Subscribe(LOGIN_SUCCESS, [this](std::string guid, CustomPacket& customPacket) {
-			//Mandarlo al Lobby
+		std::cout << "Login succes" << std::endl;
+		SCENE.ChangeScene(new LobbyScene());
+		});
+
+	EVENT_MANAGER.Subscribe(CREATE_ROOM, [this](std::string guid, CustomPacket& customPacket) {
+		std::string id;
+		customPacket.packet >> id;
+
+		SendPacketToServer(customPacket);
+
+		});
+
+	EVENT_MANAGER.Subscribe(CREATE_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+
+		std::cout << "Create room succes: " << responseMessage << std::endl;
+		SCENE.ChangeScene(new GameScene());
+		});
+
+	EVENT_MANAGER.Subscribe(CREATE_ROOM_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+
+		std::cout << "Create Room error: " << responseMessage << std::endl;
+		});
+
+	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+
+		std::cout << "Join room succes: " << responseMessage << std::endl;
+		SCENE.ChangeScene(new GameScene());
+		});
+
+	EVENT_MANAGER.Subscribe(JOIN_ROOM_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+		std::string responseMessage;
+
+		customPacket.packet >> responseMessage;
+
+		std::cout << "Join Room error: " << responseMessage << std::endl;
 		});
 }
 

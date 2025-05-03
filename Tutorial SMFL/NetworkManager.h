@@ -4,11 +4,13 @@
 #include <string>
 
 #include "CustomPacket.h"
+#include <thread>
 
 #define NETWORK NetworkManager::Instance()
 
 #define SERVER_PORT 55000
-const sf::IpAddress SERVER_IP = sf::IpAddress(127, 0, 0, 1);
+const sf::IpAddress SERVER_IP = sf::IpAddress(93,176,163,135);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(127,0,0,1);
 
 class NetworkManager
 {
@@ -23,6 +25,9 @@ private:
 
 	sf::TcpListener listener;
 	sf::SocketSelector socketSelector;
+
+	std::thread networkThread;
+	std::atomic<bool> running = false;
 
 public:
 	inline static NetworkManager& Instance()

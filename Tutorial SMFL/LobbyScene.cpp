@@ -1,6 +1,7 @@
 #include "LobbyScene.h"
 #include "SceneManager.h"
 #include "NetworkManager.h"
+#include "EventManager.h"
 
 LobbyScene::LobbyScene() : Scene()
 {
@@ -28,7 +29,6 @@ void LobbyScene::exit()
 void LobbyScene::update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
-	NETWORK.Update();
 	Render(window);
 }
 
@@ -49,14 +49,19 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 			if (i == 0)
 			{
 				//Mandar paquete con la información de la ID
-				std::cout << "Create Room" << std::endl;
-				SCENE.ChangeScene(new GameScene());
+				CustomPacket customPacket(CREATE_ROOM);
+				customPacket.packet << textId->getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(CREATE_ROOM, " ", customPacket);
+				std::cout << "Create room Send" << std::endl;
 			}
 			else if (i == 1)
 			{
-				//Mandar paquete con la información de la ID y mirar si hay sala
-				SCENE.ChangeScene(new GameScene());
-				std::cout << "Join Room" << std::endl;
+				CustomPacket customPacket(JOIN_ROOM);
+				customPacket.packet << textId->getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(JOIN_ROOM, " ", customPacket);
+				std::cout << "Join room Send" << std::endl;
 			}
 		}
 	}

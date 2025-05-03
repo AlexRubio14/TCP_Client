@@ -1,6 +1,7 @@
 #include "RegisterScene.h"
 #include "SceneManager.h"
 #include "NetworkManager.h"
+#include "EventManager.h"
 
 RegisterScene::RegisterScene() : Scene()
 {
@@ -146,15 +147,19 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 
 			if (i == 0) 
 			{
-				//Mandar paquete con la información del nombre y password
-				std::cout << "Register Done"<<std::endl;
-				SCENE.ChangeScene(new LobbyScene());
+				CustomPacket customPacket(REGISTER);
+				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(REGISTER, " ", customPacket);
+				std::cout << "Register Send" << std::endl;
 			}
 			else if (i == 1) 
 			{
-				//Mandar paquete con la información del nombre y password y mirar si puede logear
-				SCENE.ChangeScene(new LobbyScene());
-				std::cout << "Login Done" << std::endl;
+				CustomPacket customPacket(LOGIN);
+				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(LOGIN, " ", customPacket);
+				std::cout << "Login Send" << std::endl;
 			}
 		}
 	}
@@ -176,7 +181,6 @@ void RegisterScene::exit()
 void RegisterScene::update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
-	NETWORK.Update();
 	Render(window);
 }
 

@@ -6,22 +6,38 @@ bool NetworkManager::ConnectServer()
 	if (socketServer.connect(SERVER_IP, SERVER_PORT) == sf::Socket::Status::Done)
 	{
 		std::cout << "Connected" << std::endl;
+
+		socketServer.setBlocking(false);  
+		socketSelector.add(socketServer); 
+		running = true; 
+
+		networkThread = std::thread([this]() {
+			while (running)
+			{
+				Update();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+			});
+
 		return true;
 	}
-
 	std::cerr << "Error trying connect the Server" << std::endl;
 	return false;
 }
 
 void NetworkManager::DisconnectServer()
 {
+	running = false;
+	if (networkThread.joinable())
+		networkThread.join();
+
 	socketServer.disconnect();
 	std::cout << "Disconnect Server" << std::endl;
 }
 
 void NetworkManager::Update()
 {
-	if (socketSelector.wait())
+	if (socketSelector.wait(sf::milliseconds(100)))
 	{
 		if (socketSelector.isReady(listener))
 		{
@@ -31,8 +47,8 @@ void NetworkManager::Update()
 		{
 			UpdateClient();
 		}
+		RecivePacket();
 	}
-	RecivePacket();
 }
 
 void NetworkManager::HandleNewConnection()
