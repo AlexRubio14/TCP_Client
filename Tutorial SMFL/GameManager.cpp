@@ -28,15 +28,15 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 
 	window.clear();
 
+	currentClient->HandleEvent(event, window);
+	HandleEvent(event, window);
+
 	map->Update(window);
 
 	for (Client* client : clients)
 	{
 		client->Update(window);
 	}
-	HandleEvent(event, window);
-
-	currentClient->HandleEvent(event, window);
 
 	window.display();
 }

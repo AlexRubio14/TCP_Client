@@ -146,7 +146,7 @@ void PacketManager::Init()
 		});
 }
 
-void PacketManager::ProcessPacket(std::string guid, CustomPacket customPacket)
+void PacketManager::ProcessPacket(std::string guid, CustomPacket& customPacket)
 {
 	customPacket.packet >> customPacket.type;
 
