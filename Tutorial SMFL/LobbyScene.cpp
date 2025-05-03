@@ -8,7 +8,7 @@ LobbyScene::LobbyScene() : Scene()
 
 void LobbyScene::enter(sf::RenderWindow& window)
 {
-	std::cout << "Entras a la Lobby, Pon una ID y pulsa uno de los botones" << std::endl;
+	std::cout << "Enter Lobby Scene" << std::endl;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -21,7 +21,7 @@ void LobbyScene::enter(sf::RenderWindow& window)
 
 void LobbyScene::exit()
 {
-	std::cout << "Sales del Lobby" << std::endl;
+	std::cout << "Exit Lobby Scene" << std::endl;
 }
 
 void LobbyScene::update(sf::RenderWindow& window, const sf::Event& event)

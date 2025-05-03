@@ -8,7 +8,7 @@ RegisterScene::RegisterScene() : Scene()
 
 void RegisterScene::enter(sf::RenderWindow& window)
 {
-	std::cout << "Entras a la escena de Registro, Introduce tu Usuario y contraseña" << std::endl;
+	std::cout << "Enter Register Scene" << std::endl;
 	
 	for (int i = 0; i < 2; i++)
 	{
@@ -169,7 +169,7 @@ bool RegisterScene::EmptyInformation()
 
 void RegisterScene::exit()
 {
-	std::cout << "Sales del Registro" << std::endl;
+	std::cout << "Exit Register Scene" << std::endl;
 }
 
 void RegisterScene::update(sf::RenderWindow& window, const sf::Event& event)
