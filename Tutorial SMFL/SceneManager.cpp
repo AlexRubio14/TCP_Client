@@ -1,4 +1,6 @@
 #include "SceneManager.h"
+#include "PacketManager.h"
+#include "NetworkManager.h"
 
 void SceneManager::InitScenes(Scene* scene)
 {
@@ -6,6 +8,10 @@ void SceneManager::InitScenes(Scene* scene)
 		sf::Style::Titlebar | sf::Style::Close);
 	currentScene = scene;
 	currentScene->enter(*window);
+
+	PACKET_MANAGER.Init();
+	PACKET_MANAGER.SendHandshake(" ");
+	NETWORK.GetSocketSelector().add(NETWORK.GetListener());
 }
 
 void SceneManager::ChangeScene(Scene* scene)

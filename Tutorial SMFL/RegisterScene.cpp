@@ -1,5 +1,6 @@
 #include "RegisterScene.h"
 #include "SceneManager.h"
+#include "NetworkManager.h"
 
 RegisterScene::RegisterScene() : Scene()
 {
@@ -175,6 +176,7 @@ void RegisterScene::exit()
 void RegisterScene::update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
+	NETWORK.Update();
 	Render(window);
 }
 

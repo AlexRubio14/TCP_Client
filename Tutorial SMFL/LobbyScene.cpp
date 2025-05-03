@@ -1,5 +1,6 @@
 #include "LobbyScene.h"
 #include "SceneManager.h"
+#include "NetworkManager.h"
 
 LobbyScene::LobbyScene() : Scene()
 {
@@ -27,6 +28,7 @@ void LobbyScene::exit()
 void LobbyScene::update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
+	NETWORK.Update();
 	Render(window);
 }
 

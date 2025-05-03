@@ -1,0 +1,103 @@
+#include "PacketManager.h"
+#include <iostream>
+#include "EventManager.h"
+#include "NetworkManager.h"
+
+void PacketManager::HandleHandshake(sf::Packet& packet)
+{
+	std::string messageFromServer;
+	packet >> messageFromServer;
+
+	std::cout << "Messages received from server: " << messageFromServer << std::endl;
+}
+
+void PacketManager::HandleTest(sf::Packet& packet)
+{
+	std::string message;
+	packet >> message;
+
+	std::cout << "Message received from server: " << message << std::endl;
+}
+
+void PacketManager::SendHandshake(const std::string guid)
+{
+	CustomPacket customPacket(HANDSHAKE);
+	customPacket.packet << "Hello Server, I'm the new client";
+
+	SendPacketToServer(customPacket);
+}
+
+PacketManager& PacketManager::Instance()
+{
+	static PacketManager instance;
+	return instance;
+}
+
+void PacketManager::Init()
+{
+	EVENT_MANAGER.Subscribe(HANDSHAKE, [this](std::string guid, CustomPacket& customPacket) {
+		HandleHandshake(customPacket.packet);
+		});
+
+	EVENT_MANAGER.Subscribe(TEST, [this](std::string guid, CustomPacket& customPacket) {
+		HandleTest(customPacket.packet);
+		});
+
+	EVENT_MANAGER.Subscribe(REGISTER, [](std::string guid, CustomPacket& customPacket) {
+		std::string username;
+		std::string password;
+		customPacket.packet >> username >> password;
+
+		});
+
+	EVENT_MANAGER.Subscribe(REGISTER_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+			//Error al registrarse
+		});
+
+	EVENT_MANAGER.Subscribe(REGISTER_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+			//Mandarlo al Lobby
+		});
+
+	EVENT_MANAGER.Subscribe(LOGIN, [this](std::string guid, CustomPacket& customPacket) {
+
+		std::string username;
+		std::string password;
+		customPacket.packet >> username >> password;
+
+		});
+
+	EVENT_MANAGER.Subscribe(LOGIN_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+		//Error al logearse
+
+		});
+
+	EVENT_MANAGER.Subscribe(LOGIN_SUCCESS, [this](std::string guid, CustomPacket& customPacket) {
+			//Mandarlo al Lobby
+		});
+}
+
+void PacketManager::ProcessPacket(std::string guid, CustomPacket customPacket)
+{
+	customPacket.packet >> customPacket.type;
+
+	EVENT_MANAGER.Emit(customPacket.type, guid, customPacket);
+}
+
+void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
+{
+	if (client->GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
+		std::cout << "Message sent to client " << std::endl;
+	else
+		std::cerr << "Error sending the message to client" << std::endl;
+}
+
+void PacketManager::SendPacketToServer(CustomPacket& customPacket)
+{
+	if (NETWORK.GetSocketServer().send(customPacket.packet) == sf::Socket::Status::Done)
+	{
+		std::cout << "Packet send to server" << std::endl;
+	}
+	else
+		std::cout << "Error sending packet to server" << std::endl;
+}
+
