@@ -8,7 +8,7 @@ LobbyScene::LobbyScene() : Scene()
 
 }
 
-void LobbyScene::enter(sf::RenderWindow& window)
+void LobbyScene::Enter(sf::RenderWindow& window)
 {
 	std::cout << "Enter Lobby Scene" << std::endl;
 
@@ -21,12 +21,12 @@ void LobbyScene::enter(sf::RenderWindow& window)
 	currentText = nullptr;
 }
 
-void LobbyScene::exit()
+void LobbyScene::Exit()
 {
 	std::cout << "Exit Lobby Scene" << std::endl;
 }
 
-void LobbyScene::update(sf::RenderWindow& window, const sf::Event& event)
+void LobbyScene::Update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
 	Render(window);

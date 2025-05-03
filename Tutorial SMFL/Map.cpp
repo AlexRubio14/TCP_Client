@@ -79,7 +79,7 @@ void Map::CreateBases()
 	}
 }
 
-void Map::SetPlayersName()
+void Map::SetClientsName()
 {
 	font = SCENE.GetCurrentScene()->GetFont();
 	sf::RectangleShape square = squares[0];
@@ -125,7 +125,7 @@ void Map::CreateBoard(sf::RenderWindow& window)
 	squares[1].setOutlineThickness(10.f);
 	squares[1].setOutlineColor(sf::Color::Black);
 
-	SetPlayersName();
+	SetClientsName();
 }
 
 void Map::SetCellsPosition(sf::RenderWindow& window)
@@ -322,7 +322,7 @@ Map::Map(sf::RenderWindow& window)
 	CreateCells();
 	SetNextCells();
 	SetCellsPosition(window);
-	SetPlayersName();
+	SetClientsName();
 }
 
 Map::~Map()

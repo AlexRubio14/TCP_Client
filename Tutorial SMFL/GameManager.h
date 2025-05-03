@@ -1,6 +1,6 @@
 #pragma once
 #include "Map.h"
-#include "Player.h"
+#include "Client.h"
 
 #define GAME GameManager::Instance()
 
@@ -8,10 +8,10 @@ class GameManager
 {
 private:
 	Map* map;
-	std::vector<Player*> players;
+	std::vector<Client*> clients;
 
-	Player* currentPlayer;
-	int currentPlayerIndex;
+	Client* currentClient;
+	int currentClientIndex;
 
 	GameManager() = default;
 
@@ -25,7 +25,7 @@ public:
 		return manager;
 	}
 
-	void Init(Map* _map);
+	void Init(sf::RenderWindow& _window);
 	void Update(sf::RenderWindow& window, const sf::Event& event);
 
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
@@ -34,8 +34,10 @@ public:
 
 	Token* TokenInPosition(Token* tokenChecked);
 
+	void AddClient(const std::string& ip, const std::string& name, const int& index);
+
 	inline Map* GetMap() { return map; }
-	inline Player* GetCurrentPlayer() { return currentPlayer; }
-	inline std::vector<Player*> GetPlayers() { return players; }
+	inline Client* GetCurrentClient() { return currentClient; }
+	inline std::vector<Client*> GetClients() { return clients; }
 };
 

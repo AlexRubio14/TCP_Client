@@ -18,9 +18,9 @@ public:
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
 
-    virtual void enter(sf::RenderWindow& window) = 0;
-    virtual void exit() = 0;
-    virtual void update(sf::RenderWindow& window, const sf::Event& event) = 0;
+    virtual void Enter(sf::RenderWindow& window) = 0;
+    virtual void Exit() = 0;
+    virtual void Update(sf::RenderWindow& window, const sf::Event& event) = 0;
     virtual void HandleEvent(sf::RenderWindow& window, const sf::Event& event);
     virtual void DetectRectangle(sf::Vector2f mousePosition) = 0;
 

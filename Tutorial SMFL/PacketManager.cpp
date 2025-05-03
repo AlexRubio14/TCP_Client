@@ -3,6 +3,7 @@
 #include "EventManager.h"
 #include "NetworkManager.h"
 #include "SceneManager.h"
+#include "GameManager.h"
 
 void PacketManager::HandleHandshake(sf::Packet& packet)
 {
@@ -26,12 +27,6 @@ void PacketManager::SendHandshake(const std::string guid)
 	customPacket.packet << "Hello Server, I'm the new client";
 
 	SendPacketToServer(customPacket);
-}
-
-PacketManager& PacketManager::Instance()
-{
-	static PacketManager instance;
-	return instance;
 }
 
 void PacketManager::Init()
@@ -115,7 +110,6 @@ void PacketManager::Init()
 		customPacket.packet >> id;
 
 		SendPacketToServer(customPacket);
-
 		});
 
 	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
@@ -124,6 +118,7 @@ void PacketManager::Init()
 		customPacket.packet >> responseMessage;
 
 		std::cout << "Join room succes: " << responseMessage << std::endl;
+
 		SCENE.ChangeScene(new GameScene());
 		});
 
@@ -133,6 +128,21 @@ void PacketManager::Init()
 		customPacket.packet >> responseMessage;
 
 		std::cout << "Join Room error: " << responseMessage << std::endl;
+		});
+
+	EVENT_MANAGER.Subscribe(START_GAME, [this](std::string guid, CustomPacket& customPacket) {
+		std::cout << "Start Game" << std::endl;
+
+		std::string ip;
+		std::string name;
+		int index;
+
+		GAME.Init(SCENE.GetWindow());
+		for (int i = 0; i < 4; i++)
+		{
+			customPacket.packet >> ip >> name >> index;
+			GAME.AddClient(ip, name, index);
+		}
 		});
 }
 

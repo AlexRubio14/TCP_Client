@@ -23,7 +23,7 @@ private:
 	void CreateCells();
 	void SetNextCells();
 	void CreateBases();
-	void SetPlayersName();
+	void SetClientsName();
 	void CreateBoard(sf::RenderWindow& window);
 	void Render(sf::RenderWindow& window);
 	void SetCellsPosition(sf::RenderWindow& window);

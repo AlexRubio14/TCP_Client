@@ -8,7 +8,7 @@ RegisterScene::RegisterScene() : Scene()
 
 }
 
-void RegisterScene::enter(sf::RenderWindow& window)
+void RegisterScene::Enter(sf::RenderWindow& window)
 {
 	std::cout << "Enter Register Scene" << std::endl;
 	
@@ -173,12 +173,12 @@ bool RegisterScene::EmptyInformation()
 	return false;
 }
 
-void RegisterScene::exit()
+void RegisterScene::Exit()
 {
 	std::cout << "Exit Register Scene" << std::endl;
 }
 
-void RegisterScene::update(sf::RenderWindow& window, const sf::Event& event)
+void RegisterScene::Update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
 	Render(window);
