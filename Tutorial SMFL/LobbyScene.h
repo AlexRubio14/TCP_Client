@@ -7,8 +7,7 @@ private:
     std::vector<sf::RectangleShape> buttons;
     sf::RectangleShape textBackGround;
     std::vector<sf::Text> buttonsTexts;
-    sf::Text* textsInformation;
-    sf::Text* textId;
+    std::vector<sf::Text> idInformation;
 
 public:
     LobbyScene();

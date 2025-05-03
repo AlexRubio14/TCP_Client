@@ -110,6 +110,14 @@ void PacketManager::Init()
 		std::cout << "Create Room error: " << responseMessage << std::endl;
 		});
 
+	EVENT_MANAGER.Subscribe(JOIN_ROOM, [this](std::string guid, CustomPacket& customPacket) {
+		std::string id;
+		customPacket.packet >> id;
+
+		SendPacketToServer(customPacket);
+
+		});
+
 	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
 		std::string responseMessage;
 

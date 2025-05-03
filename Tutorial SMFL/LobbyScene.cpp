@@ -36,21 +36,21 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 {
 	if (textBackGround.getGlobalBounds().contains(mousePosition)) {
 		inputText = std::string();
-		currentText = textId;
+		currentText = &idInformation[1];
 	}
 
 	for (size_t i = 0; i < buttons.size(); ++i) {
 		if (buttons[i].getGlobalBounds().contains(mousePosition)) {
 			currentText = nullptr;
 
-			if (textId->getString().isEmpty())
+			if (idInformation[1].getString().isEmpty())
 				return;
 
 			if (i == 0)
 			{
 				//Mandar paquete con la información de la ID
 				CustomPacket customPacket(CREATE_ROOM);
-				customPacket.packet << textId->getString().toAnsiString();
+				customPacket.packet << idInformation[1].getString().toAnsiString();
 
 				EVENT_MANAGER.Emit(CREATE_ROOM, " ", customPacket);
 				std::cout << "Create room Send" << std::endl;
@@ -58,7 +58,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 			else if (i == 1)
 			{
 				CustomPacket customPacket(JOIN_ROOM);
-				customPacket.packet << textId->getString().toAnsiString();
+				customPacket.packet << idInformation[1].getString().toAnsiString();
 
 				EVENT_MANAGER.Emit(JOIN_ROOM, " ", customPacket);
 				std::cout << "Join room Send" << std::endl;
@@ -110,8 +110,11 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
 	textBackGround = sf::RectangleShape();
-	textsInformation = new sf::Text(font);
-	textId = new sf::Text(font);
+
+	for (int i = 0; i < 2; i++)
+	{
+		idInformation.push_back(sf::Text(font));
+	}
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -123,25 +126,25 @@ void LobbyScene::CreateTextField(sf::RenderWindow& window)
 	textBackGround.setOrigin(textBackGround.getSize() / 2.f);
 	textBackGround.setPosition(position);
 
-	textsInformation->setString("ID");
-	textsInformation->setFillColor(sf::Color::Black);
+	idInformation[0].setString("ID");
+	idInformation[0].setFillColor(sf::Color::Black);
 
-	textId->setFillColor(sf::Color::Black);
+	idInformation[1].setFillColor(sf::Color::Black);
 
-	sf::FloatRect textInformationBounds = textsInformation->getLocalBounds();
-	textsInformation->setOrigin(sf::Vector2f(
+	sf::FloatRect textInformationBounds = idInformation[0].getLocalBounds();
+	idInformation[0].setOrigin(sf::Vector2f(
 		textInformationBounds.position.x + textInformationBounds.size.x / 2.f,
 		textInformationBounds.position.y + textInformationBounds.size.y / 2.f + 45
 	));
 
-	sf::FloatRect textBounds = textId->getLocalBounds();
-	textId->setOrigin(sf::Vector2f(
+	sf::FloatRect textBounds = idInformation[1].getLocalBounds();
+	idInformation[1].setOrigin(sf::Vector2f(
 		textBounds.position.x + textBounds.size.x / 2.f + 115,
 		textBounds.position.y + textBounds.size.y / 2.f + 20
 	));
 
-	textId->setPosition(position);
-	textsInformation->setPosition(position);
+	idInformation[1].setPosition(position);
+	idInformation[0].setPosition(position);
 }
 
 void LobbyScene::Render(sf::RenderWindow& window)
@@ -155,8 +158,9 @@ void LobbyScene::Render(sf::RenderWindow& window)
 	window.draw(textBackGround);
 	for (sf::Text text : buttonsTexts)
 		window.draw(text);
-	window.draw(*textsInformation);
-	window.draw(*textId);
+
+	for (sf::Text text : idInformation)
+		window.draw(text);
 
 	window.display();
 }
