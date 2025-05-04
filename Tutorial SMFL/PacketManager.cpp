@@ -135,7 +135,7 @@ void PacketManager::Init()
 
 		int numPlayers = 2;
 		std::string ip, name;
-		int index, numPort;
+		int index, numPort, myIndex = -1;
 
 		GAME.Init(SCENE.GetWindow());
 
@@ -145,12 +145,8 @@ void PacketManager::Init()
 
 			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << std::endl;
 
-			// Si es el cliente local, reconocelo
-			if (ip == NETWORK.GetLocalIP())
-			{
-				GAME.RecognizeClient(index);
-				continue;
-			}
+			if (ip == sf::IpAddress::getPublicAddress()->toString())
+				myIndex = index;
 
 			numPort = NETWORK.GetListeningPort() + index;
 			GAME.AddClient(ip, name, index, numPort);
@@ -158,9 +154,15 @@ void PacketManager::Init()
 			std::cout << "Client added: IP = " << ip << ", Port = " << numPort << std::endl;
 		}
 
+		if (myIndex == -1)
+		{
+			std::cout << "You haven't recognized yourself" << std::endl;
+			return;
+		}
 		EVENT_MANAGER.Emit(DISCONNECT, guid, customPacket);
 		NETWORK.DisconnectServer();
 		GAME.StartGame();
+		NETWORK.StartClientConnections(GAME.RecognizeClient(myIndex), GAME.GetReferenceClient()->GetNumPort());
 		});
 
 	EVENT_MANAGER.Subscribe(END_TURN, [this](std::string guid, CustomPacket& customPacket) {

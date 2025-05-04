@@ -20,7 +20,7 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	//	EndTurn();
 	//}
 
-	if(client->GetIndex() == currentClient->GetIndex())
+	if(referenceClient->GetIndex() == currentClient->GetIndex())
 		currentClient->HandleEvent(event, window);
 	HandleEvent(event, window);
 
@@ -98,19 +98,20 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	clients.push_back(newClient);
 }
 
-void GameManager::RecognizeClient(int index)
+std::vector<std::shared_ptr<Client>> GameManager::RecognizeClient(int index)
 {
 	std::vector<std::shared_ptr<Client>> otherClients;
 
 	for (int i = 0; i < clients.size(); i++)
 	{
 		if (clients[i]->GetIndex() == index)
-			client = clients[i];
+			referenceClient = clients[i];
 		else
 			otherClients.push_back(clients[i]);
 	}
 
-	NETWORK.StartClientConnections(otherClients, client->GetNumPort());
 	for (int i = 0; i < clients.size(); i++)
 		map->SetName(i, clients[i]->GetName());
+
+	return otherClients;
 }
