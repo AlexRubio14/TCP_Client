@@ -51,6 +51,7 @@ public:
 	void HandleNewConnection();
 	void UpdateClient();
 	void RecivePacket();
+	void RecivePacketClient(std::shared_ptr<Client> client);
 
 	inline sf::TcpSocket& GetSocketServer() { return socketServer; }
 	inline sf::SocketSelector GetSocketSelector() { return socketSelector; }
