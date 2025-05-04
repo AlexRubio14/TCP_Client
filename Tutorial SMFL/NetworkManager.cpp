@@ -137,12 +137,7 @@ void NetworkManager::Update()
 
 		for (auto& client : GAME.GetClients())
 		{
-			if (socketSelector.isReady(client->GetSocket()))
-			{
-				std::cout << "Recibiendo de cliente: " << client->GetIp() << std::endl;
-
-				RecivePacketClient(client);
-			}
+			RecivePacketClient(client);
 		}
 	}
 }
