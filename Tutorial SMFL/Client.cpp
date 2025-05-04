@@ -32,23 +32,18 @@ Client::Client(const std::string& _ip, const std::string& _name, const sf::Color
 
 void Client::HandleIncomingPackets()
 {
-	sf::Packet packet;
-	if (socket->receive(packet) == sf::Socket::Status::Done) {
-		std::string msg;
-		packet >> msg;
-		std::cout << "[CLIENT] Packet recibido: " << msg << std::endl;
-	}
-    //CustomPacket customPacket;
+    CustomPacket customPacket;
 
-    //sf::Socket::Status status = socket->receive(customPacket.packet);
+    sf::Socket::Status status = socket->receive(customPacket.packet);
 
-    //if (status == sf::Socket::Status::Done) {
-    //    PACKET_MANAGER.ProcessPacket("", customPacket);
-    //}
-    //else if (status == sf::Socket::Status::Disconnected)
-    //{
-    //    EVENT_MANAGER.Emit(DISCONNECT, "", customPacket);
-    //}
+    if (status == sf::Socket::Status::Done) {
+		std::cout << "Voy a procesar el paquete" << std::endl;
+        PACKET_MANAGER.ProcessPacket("", customPacket);
+    }
+    else if (status == sf::Socket::Status::Disconnected)
+    {
+        EVENT_MANAGER.Emit(DISCONNECT, "", customPacket);
+    }
 }
 
 void Client::ControlDice()
