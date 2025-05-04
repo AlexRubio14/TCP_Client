@@ -12,11 +12,12 @@ void LobbyScene::Enter(sf::RenderWindow& window)
 {
 	std::cout << "Enter Lobby Scene" << std::endl;
 
+	CreateTextField(window);
 	for (int i = 0; i < 2; i++)
 	{
 		CreateButtons(window, i);
 	}
-	CreateTextField(window);
+
 
 	currentText = nullptr;
 }
@@ -102,7 +103,7 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 	buttonsTexts[id].setOrigin(sf::Vector2f(
 		textBounds.position.x + textBounds.size.x / 2.f,
 		textBounds.position.y + textBounds.size.y / 2.f
-	));;
+	));
 
 	buttonsTexts[id].setPosition(position);
 }

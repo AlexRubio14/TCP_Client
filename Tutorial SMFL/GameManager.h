@@ -31,6 +31,7 @@ public:
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
 	void StartTurn();
 	void EndTurn();
+	void StartGame();
 
 	Token* TokenInPosition(Token* tokenChecked);
 

@@ -6,13 +6,8 @@ void GameManager::Init(sf::RenderWindow& _window)
 {
 	map = new Map(_window);
 
-	currentClientIndex = 0;
-	currentClient = clients[currentClientIndex];
-
 	for (int i = 0; i < clients.size(); i++)
 		map->SetName(i, clients[i]->GetName());
-
-	StartTurn();
 }
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
@@ -20,16 +15,16 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
-	if (TIME.IsTurnTimeOver())
-	{
-		std::cout << "Se acabó el tiempo, cambio de turno";
-		EndTurn();
-	}
-
-	window.clear();
+	//if (TIME.IsTurnTimeOver())
+	//{
+	//	std::cout << "Se acabó el tiempo, cambio de turno";
+	//	EndTurn();
+	//}
 
 	currentClient->HandleEvent(event, window);
 	HandleEvent(event, window);
+
+	window.clear();
 
 	map->Update(window);
 
@@ -63,6 +58,13 @@ void GameManager::EndTurn()
 	StartTurn();
 }
 
+void GameManager::StartGame()
+{
+	currentClientIndex = 0;
+	currentClient = clients[currentClientIndex];
+	StartTurn();
+}
+
 Token* GameManager::TokenInPosition(Token* tokenChecked)
 {
 	for (Client* client : clients)
@@ -80,6 +82,7 @@ Token* GameManager::TokenInPosition(Token* tokenChecked)
 void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index)
 {
 	sf::Color color;
+	std::cout << clients.size() << std::endl;
 	if (clients.size() < 1)
 		color = sf::Color::Red;
 	else if (clients.size() < 2)
@@ -91,4 +94,5 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 
 	Client* newClient = new Client(ip, name, color, index);
 	clients.push_back(newClient);
+
 }
