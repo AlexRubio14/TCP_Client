@@ -54,7 +54,7 @@ public:
 
 	bool ConnectServer();
 	void ConnectClients(std::vector<std::shared_ptr<Client>> clients);
-	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort);
+	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int basePort);
 	void StartListeningForClients(sf::TcpListener& listener, const int numPort);
 	void DisconnectServer();
 	void DisconnectClient();

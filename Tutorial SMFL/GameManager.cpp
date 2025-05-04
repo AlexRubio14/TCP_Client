@@ -99,7 +99,7 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	clients.push_back(newClient);
 }
 
-std::vector<std::shared_ptr<Client>> GameManager::RecognizeClient(int index)
+void GameManager::RecognizeClient(int index)
 {
 	std::vector<std::shared_ptr<Client>> otherClients;
 
@@ -107,12 +107,8 @@ std::vector<std::shared_ptr<Client>> GameManager::RecognizeClient(int index)
 	{
 		if (clients[i]->GetIndex() == index)
 			referenceClient = clients[i];
-		else if (i > index)
-			otherClients.push_back(clients[i]);
 	}
 
 	for (int i = 0; i < clients.size(); i++)
 		map->SetName(i, clients[i]->GetName());
-
-	return otherClients;
 }

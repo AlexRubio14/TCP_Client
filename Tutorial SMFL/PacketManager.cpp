@@ -159,9 +159,10 @@ void PacketManager::Init()
 			std::cout << "You haven't recognized yourself" << std::endl;
 			return;
 		}
-		std::vector<std::shared_ptr<Client>> otherClients = GAME.RecognizeClient(myIndex);
+
+		GAME.RecognizeClient(myIndex);
 		EVENT_MANAGER.Emit(DISCONNECT, guid, customPacket);
-		NETWORK.StartClientConnections(otherClients, GAME.GetReferenceClient()->GetNumPort());
+		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetIndex(), GAME.GetReferenceClient()->GetNumPort());
 		NETWORK.DisconnectServer();
 		GAME.StartGame();
 		
