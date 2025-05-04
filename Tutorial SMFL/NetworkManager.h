@@ -25,7 +25,8 @@ private:
 	CustomPacket customPacket;
 
 	sf::TcpListener listener;
-	sf::SocketSelector socketSelector;
+	sf::SocketSelector serverSelector;
+	sf::SocketSelector clientSelector;
 
 	std::thread networkThread;
 	std::thread clientThread;
@@ -56,7 +57,7 @@ public:
 	void RecivePacketClient(std::shared_ptr<Client> client);
 
 	inline sf::TcpSocket& GetSocketServer() { return socketServer; }
-	inline sf::SocketSelector GetSocketSelector() { return socketSelector; }
+	inline sf::SocketSelector GetSocketSelector() { return serverSelector; }
 	inline sf::TcpListener& GetListener() { return listener; }
 	inline int GetListeningPort() const { return listeningPort; }
 };

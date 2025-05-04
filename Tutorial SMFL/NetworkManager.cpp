@@ -14,7 +14,7 @@ bool NetworkManager::ConnectServer()
 		std::cout << "Connected" << std::endl;
 
 		socketServer.setBlocking(false);  
-		socketSelector.add(socketServer); 
+		serverSelector.add(socketServer); 
 		running = true; 
 
 		networkThread = std::thread([this]() {
@@ -45,7 +45,7 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 			if (status == sf::Socket::Status::Done) {
 				std::cout << "Connected to " << ip.toString() << std::endl;
 				clients[i]->GetSocket().setBlocking(false);
-				socketSelector.add(clients[i]->GetSocket());
+				serverSelector.add(clients[i]->GetSocket());
 			}
 			else {
 				std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -89,7 +89,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 					std::unique_ptr newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
 					matchingClient->SetSocket(std::move(newSocket));
-					socketSelector.add(matchingClient->GetSocket());
+					clientSelector.add(matchingClient->GetSocket());
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
 				else {
@@ -97,7 +97,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 			}
 
-			if (socketSelector.wait(sf::milliseconds(10))) {
+			if (clientSelector.wait(sf::milliseconds(10))) {
 				UpdateClients(); 
 			}
 		}
@@ -107,7 +107,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 		ConnectClients(clients);
 		});
 
-	clientThread.join();
+	clientThread.detach();
 	connectThread.detach();
 }
 
@@ -131,7 +131,7 @@ void NetworkManager::DisconnectClient()
 
 void NetworkManager::Update()
 {
-	if (socketSelector.wait(sf::milliseconds(100)))
+	if (serverSelector.wait(sf::milliseconds(100)))
 	{
 		RecivePacket();
 	}
@@ -139,11 +139,16 @@ void NetworkManager::Update()
 
 void NetworkManager::UpdateClients()
 {
-	for (auto& client : GAME.GetClients())
+	for (std::shared_ptr<Client> client : GAME.GetClients())
 	{
-		if (socketSelector.isReady(client->GetSocket()))
+		if (client && clientSelector.isReady(client->GetSocket()))
 		{
-			RecivePacketClient(client);
+			std::cout << "estoy recibiendo un paquete" << std::endl;
+			client->HandleIncomingPackets();
+		}
+		else if (!client)
+		{
+			std::cerr << "Invalid client pointer detected." << std::endl;
 		}
 	}
 }
