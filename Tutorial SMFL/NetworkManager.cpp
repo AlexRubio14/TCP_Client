@@ -1,10 +1,11 @@
 #include "NetworkManager.h"
 #include "PacketManager.h"
+#include "GameManager.h"
 
 
 NetworkManager::NetworkManager()
 {
-	listeningPort = 55001;
+	listeningPort = 55004;
 }
 bool NetworkManager::ConnectServer()
 {
@@ -119,6 +120,12 @@ void NetworkManager::DisconnectServer()
 
 	socketServer.disconnect();
 	std::cout << "Disconnect Server" << std::endl;
+}
+
+void NetworkManager::DisconnectClient()
+{
+	for (int i = 0; i < GAME.GetClients().size(); i++)
+		GAME.GetClients()[i]->GetSocket().disconnect();
 }
 
 void NetworkManager::Update()

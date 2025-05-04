@@ -44,6 +44,7 @@ public:
 	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort);
 	void StartListeningForClients(sf::TcpListener& listener, const int numPort);
 	void DisconnectServer();
+	void DisconnectClient();
 
 	void Update();
 	void HandleNewConnection();

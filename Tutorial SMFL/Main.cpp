@@ -11,4 +11,5 @@ void main()
 		SCENE.Update();
 	}
 	NETWORK.DisconnectServer();	
+	NETWORK.DisconnectClient();
 }
