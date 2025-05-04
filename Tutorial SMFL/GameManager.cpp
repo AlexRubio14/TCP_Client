@@ -14,6 +14,7 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
+	std::cout << "SEX" << std::endl;
 	//if (TIME.IsTurnTimeOver())
 	//{
 	//	std::cout << "Se acabó el tiempo, cambio de turno";
