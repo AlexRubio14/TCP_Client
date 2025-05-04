@@ -49,6 +49,7 @@ public:
 
     inline std::vector<Token*> GetTokens() const { return tokens; }
     inline std::string GetName() const { return name; }
+    inline int GetIndex() const { return index; }
 
     inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
     inline void SetExtraMoves(const bool state) { extraMoves = state; }

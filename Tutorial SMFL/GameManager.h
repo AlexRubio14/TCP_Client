@@ -11,6 +11,7 @@ private:
 	std::vector<Client*> clients;
 
 	Client* currentClient;
+	Client* client;
 	int currentClientIndex;
 
 	GameManager() = default;
@@ -36,6 +37,7 @@ public:
 	Token* TokenInPosition(Token* tokenChecked);
 
 	void AddClient(const std::string& ip, const std::string& name, const int& index);
+	void RecognizeClient(int index);
 
 	inline Map* GetMap() { return map; }
 	inline Client* GetCurrentClient() { return currentClient; }

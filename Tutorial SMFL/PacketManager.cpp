@@ -137,13 +137,17 @@ void PacketManager::Init()
 		std::string name;
 		int index;
 
+
 		GAME.Init(SCENE.GetWindow());
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 2; i++)
 		{
 			customPacket.packet >> ip >> name >> index;
-			GAME.AddClient(ip, name, index);
 			std::cout << "IP: " << ip << "name: " << name << "index: " << index << std::endl;
+			GAME.AddClient(ip, name, index);
 		}
+
+		customPacket.packet >> ip >> name >> index;
+		GAME.RecognizeClient(index);
 		GAME.StartGame();
 		});
 

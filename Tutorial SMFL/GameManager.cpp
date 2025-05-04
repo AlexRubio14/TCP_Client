@@ -21,7 +21,8 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	//	EndTurn();
 	//}
 
-	currentClient->HandleEvent(event, window);
+	if(client->GetIndex() == currentClient->GetIndex())
+		currentClient->HandleEvent(event, window);
 	HandleEvent(event, window);
 
 	window.clear();
@@ -95,4 +96,13 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	Client* newClient = new Client(ip, name, color, index);
 	clients.push_back(newClient);
 
+}
+
+void GameManager::RecognizeClient(int index)
+{
+	for (int i = 0; i < clients.size(); i++)
+	{
+		if (clients[i]->GetIndex() == index)
+			client = clients[i];
+	}
 }
