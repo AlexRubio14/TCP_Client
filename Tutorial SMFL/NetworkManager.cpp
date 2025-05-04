@@ -86,8 +86,9 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 
 				if (matchingClient != nullptr) {
-					matchingClient->GetSocket() = std::move(tempSocket);
-					matchingClient->GetSocket().setBlocking(false);
+					std::unique_ptr newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
+					newSocket->setBlocking(false);
+					matchingClient->SetSocket(std::move(newSocket));
 					socketSelector.add(matchingClient->GetSocket());
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
@@ -106,7 +107,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 		ConnectClients(clients);
 		});
 
-	clientThread.detach();
+	clientThread.join();
 	connectThread.detach();
 }
 
@@ -187,6 +188,7 @@ void NetworkManager::RecivePacket()
 
 void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
 {
+	CustomPacket customPacketClient;
 	if (client->GetSocket().receive(customPacketClient.packet) == sf::Socket::Status::Done)
 	{
 		PACKET_MANAGER.ProcessPacket(" ", customPacketClient);
