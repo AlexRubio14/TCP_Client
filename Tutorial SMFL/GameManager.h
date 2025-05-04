@@ -41,5 +41,6 @@ public:
 	inline const std::unique_ptr<Map>& GetMap() { return map; }
 	inline const std::shared_ptr<Client>& GetCurrentClient() { return currentClient; }
 	inline const std::vector<std::shared_ptr<Client>>& GetClients() { return clients; }
+	inline const std::shared_ptr<Client>& GetReferenceClient() { return client; }
 };
 

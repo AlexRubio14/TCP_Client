@@ -151,7 +151,21 @@ void PacketManager::Init()
 		GAME.StartGame();
 		});
 
+	EVENT_MANAGER.Subscribe(END_TURN, [this](std::string guid, CustomPacket& customPacket) {
+		for (int i = 0; i < GAME.GetClients().size(); i++)
+		{
+			if (GAME.GetReferenceClient()->GetIndex() == GAME.GetClients()[i]->GetIndex())
+				continue;
+		
+			SendPacketToClient(GAME.GetClients()[i], customPacket);
+		}
+		});
 
+	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+		std::cout << "End Turn" << std::endl;
+		
+		GAME.EndTurn();
+		});
 }
 
 void PacketManager::ProcessPacket(std::string guid, CustomPacket& customPacket)

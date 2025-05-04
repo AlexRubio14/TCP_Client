@@ -2,6 +2,7 @@
 #include "TimeManager.h"
 #include <iostream>
 #include "NetworkManager.h"
+#include "EventManager.h"
 
 void GameManager::Init(sf::RenderWindow& _window)
 {
@@ -52,6 +53,8 @@ void GameManager::StartTurn()
 
 void GameManager::EndTurn()
 {
+	CustomPacket packet(END_TURN_SUCCES);
+	EVENT_MANAGER.Emit(END_TURN, " ", packet);
 	currentClientIndex = (currentClientIndex + 1) % clients.size();
 	currentClient = clients[currentClientIndex];
 	StartTurn();
