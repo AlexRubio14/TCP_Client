@@ -29,6 +29,7 @@ private:
 	sf::SocketSelector socketSelector;
 
 	std::thread networkThread;
+	std::thread clientThread;
 	std::atomic<bool> running = false;
 	std::atomic<bool> runningClients = false;
 
@@ -49,6 +50,7 @@ public:
 	void DisconnectClient();
 
 	void Update();
+	void UpdateClients();
 	void HandleNewConnection();
 	void UpdateClient();
 	void RecivePacket();

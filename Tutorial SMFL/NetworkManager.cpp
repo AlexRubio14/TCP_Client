@@ -67,7 +67,7 @@ void NetworkManager::StartListeningForClients(sf::TcpListener& listener, const i
 }
 
 void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort) {
-	std::thread listenerThread([this, clients, numPort]() {
+	clientThread = std::thread([this, clients, numPort]() {
 		StartListeningForClients(listener, numPort);
 		runningClients = true;
 		while (runningClients) {
@@ -78,27 +78,26 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				std::optional<sf::IpAddress> clientIp = tempSocket.getRemoteAddress();
 				std::cout << "New client connected: " << clientIp->toString() << std::endl;
 
-				for (std::shared_ptr<Client> client : clients)
-				{
-					if (client->GetIp() == clientIp->toString())
-					{
+				for (std::shared_ptr<Client> client : clients) {
+					if (client->GetIp() == clientIp->toString()) {
 						matchingClient = client;
 						break;
 					}
 				}
 
-				if (matchingClient != nullptr)
-				{
+				if (matchingClient != nullptr) {
 					matchingClient->GetSocket() = std::move(tempSocket);
 					matchingClient->GetSocket().setBlocking(false);
 					socketSelector.add(matchingClient->GetSocket());
-
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
-				else
-				{
+				else {
 					std::cerr << "Client not found in the list: " << clientIp->toString() << std::endl;
 				}
+			}
+
+			if (socketSelector.wait(sf::milliseconds(10))) {
+				UpdateClients(); 
 			}
 		}
 		});
@@ -107,7 +106,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 		ConnectClients(clients);
 		});
 
-	listenerThread.detach();
+	clientThread.detach();
 	connectThread.detach();
 }
 
@@ -134,8 +133,14 @@ void NetworkManager::Update()
 	if (socketSelector.wait(sf::milliseconds(100)))
 	{
 		RecivePacket();
+	}
+}
 
-		for (auto& client : GAME.GetClients())
+void NetworkManager::UpdateClients()
+{
+	for (auto& client : GAME.GetClients())
+	{
+		if (socketSelector.isReady(client->GetSocket()))
 		{
 			RecivePacketClient(client);
 		}
