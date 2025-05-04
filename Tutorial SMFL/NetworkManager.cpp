@@ -47,7 +47,7 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 				socketSelector.add(clients[i]->GetSocket());
 			}
 			else {
-				std::cerr << "Failed to connect to " << std::endl;
+				std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
 			}
 		}
 		else {

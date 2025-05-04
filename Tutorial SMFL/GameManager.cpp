@@ -6,9 +6,6 @@
 void GameManager::Init(sf::RenderWindow& _window)
 {
 	map = std::make_unique<Map>(_window);
-
-	for (int i = 0; i < clients.size(); i++)
-		map->SetName(i, clients[i]->GetName());
 }
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
@@ -111,4 +108,6 @@ void GameManager::RecognizeClient(int index)
 	}
 
 	NETWORK.StartClientConnections(otherClients, client->GetNumPort());
+	for (int i = 0; i < clients.size(); i++)
+		map->SetName(i, clients[i]->GetName());
 }

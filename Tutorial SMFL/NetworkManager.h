@@ -10,11 +10,8 @@
 #define NETWORK NetworkManager::Instance()
 
 #define SERVER_PORT 55000
-#define CLIENT_A_PORT 55000
-#define CLIENT_B_PORT 55000
-#define CLIENT_C_PORT 55000
-//const sf::IpAddress SERVER_IP = sf::IpAddress(93,176,163,135);
-const sf::IpAddress SERVER_IP = sf::IpAddress(127,0,0,1);
+const sf::IpAddress SERVER_IP = sf::IpAddress(93,176,163,135);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(127,0,0,1);
 
 class NetworkManager
 {
