@@ -147,6 +147,7 @@ void PacketManager::Init()
 		}
 
 		customPacket.packet >> ip >> name >> index;
+		NETWORK.DisconnectServer();
 		GAME.RecognizeClient(index);
 		GAME.StartGame();
 		});

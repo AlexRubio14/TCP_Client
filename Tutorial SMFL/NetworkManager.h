@@ -6,6 +6,12 @@
 
 #include "CustomPacket.h"
 #include <thread>
+#include <mutex>
+
+enum ConnectionState {
+	Disconnected,
+	Connected
+};
 
 #define NETWORK NetworkManager::Instance()
 
@@ -30,6 +36,10 @@ private:
 
 	std::thread networkThread;
 	std::thread clientThread;
+	std::mutex networkMutex;
+
+	ConnectionState socketState;
+
 	std::atomic<bool> running = false;
 	std::atomic<bool> runningClients = false;
 
@@ -51,10 +61,9 @@ public:
 
 	void Update();
 	void UpdateClients();
-	void HandleNewConnection();
-	void UpdateClient();
 	void RecivePacket();
 	void RecivePacketClient(std::shared_ptr<Client> client);
+	bool IsConnected() const;
 
 	inline sf::TcpSocket& GetSocketServer() { return socketServer; }
 	inline sf::SocketSelector GetSocketSelector() { return serverSelector; }

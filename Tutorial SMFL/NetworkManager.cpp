@@ -25,6 +25,8 @@ bool NetworkManager::ConnectServer()
 			}
 			});
 
+		socketState = Connected;
+
 		return true;
 	}
 	std::cerr << "Error trying connect the Server" << std::endl;
@@ -114,12 +116,14 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 void NetworkManager::DisconnectServer()
 {
-	running = false;
-	if (networkThread.joinable())
-		networkThread.join();
-
-	socketServer.disconnect();
-	std::cout << "Disconnect Server" << std::endl;
+	std::lock_guard<std::mutex> lock(networkMutex);
+	if (IsConnected()) {
+		socketServer.disconnect();
+		std::cout << "Server disconnected successfully" << std::endl;
+	}
+	else {
+		std::cout << "Server is already disconnected." << std::endl;
+	}
 }
 
 void NetworkManager::DisconnectClient()
@@ -153,32 +157,6 @@ void NetworkManager::UpdateClients()
 	}
 }
 
-void NetworkManager::HandleNewConnection()
-{
-	//Client& newClient;
-
-	//if (listener.accept(newClient.GetSocket()) == sf::Socket::Status::Done)
-	//{
-	//	newClient.GetSocket().setBlocking(false);
-	//	socketSelector.add(newClient.GetSocket());
-	//}
-}
-
-void NetworkManager::UpdateClient()
-{
-	//for (std::shared_ptr<Client> client : pendingClients)
-	//{
-	//	if (client && _socketSelector.isReady(client->GetSocket()))
-	//	{
-	//		client->HandleIncomingPackets();
-	//	}
-	//	else if (!client)
-	//	{
-	//		std::cerr << "Invalid client pointer detected." << std::endl;
-	//	}
-	//}
-}
-
 void NetworkManager::RecivePacket()
 {
 	if (socketServer.receive(customPacket.packet) == sf::Socket::Status::Done)
@@ -203,3 +181,8 @@ void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
 		std::cout << "Packet not received" << std::endl;
 	}
 }
+
+bool NetworkManager::IsConnected() const {
+	return socketState == Connected; 
+}
+
