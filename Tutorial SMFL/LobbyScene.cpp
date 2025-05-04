@@ -109,11 +109,8 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
 	textBackGround.push_back(sf::RectangleShape());
-
-	for (int i = 0; i < 2; i++)
-	{
-		idInformation.push_back(sf::Text(font));
-	}
+	idInformation.push_back(sf::Text(font));
+	idInformation.push_back(sf::Text(font));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,

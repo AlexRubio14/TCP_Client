@@ -177,6 +177,7 @@ void PacketManager::ProcessPacket(std::string guid, CustomPacket& customPacket)
 
 void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
 {
+	std::cout << responsePacket.type << std::endl;
 	if (client->GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
 		std::cout << "Message sent to client " << std::endl;
 	else
