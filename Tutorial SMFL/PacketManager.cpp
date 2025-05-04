@@ -133,22 +133,33 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(START_GAME, [this](std::string guid, CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
-		std::string ip;
-		std::string name;
+		int numPlayers = 2;
+		std::string ip, name;
 		int index, numPort;
 
 		GAME.Init(SCENE.GetWindow());
-		for (int i = 0; i < 2; i++)
+
+		for (int i = 0; i < numPlayers; ++i)
 		{
 			customPacket.packet >> ip >> name >> index; 
+
+			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << std::endl;
+
+			// Si es el cliente local, reconocelo
+			if (ip == NETWORK.GetLocalIP())
+			{
+				GAME.RecognizeClient(index);
+				continue;
+			}
+
 			numPort = NETWORK.GetListeningPort() + index;
 			GAME.AddClient(ip, name, index, numPort);
-			std::cout << "numPort: " << numPort << std::endl;
+
+			std::cout << "Client added: IP = " << ip << ", Port = " << numPort << std::endl;
 		}
 
-		customPacket.packet >> ip >> name >> index;
+		EVENT_MANAGER.Emit(DISCONNECT, guid, customPacket);
 		NETWORK.DisconnectServer();
-		GAME.RecognizeClient(index);
 		GAME.StartGame();
 		});
 
