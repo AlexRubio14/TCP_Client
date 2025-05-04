@@ -69,6 +69,9 @@ void NetworkManager::StartListeningForClients(sf::TcpListener& listener, const i
 }
 
 void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort) {
+	if (clients.size() <= 0)
+		return;
+
 	clientThread = std::thread([this, clients, numPort]() {
 		StartListeningForClients(listener, numPort);
 		runningClients = true;

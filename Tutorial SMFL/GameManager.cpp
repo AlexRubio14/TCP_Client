@@ -11,10 +11,10 @@ void GameManager::Init(sf::RenderWindow& _window)
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 {
+
 	if (currentClient == nullptr)
 		return;
 
-	std::cout << "SEX" << std::endl;
 	//if (TIME.IsTurnTimeOver())
 	//{
 	//	std::cout << "Se acabó el tiempo, cambio de turno";
@@ -107,7 +107,7 @@ std::vector<std::shared_ptr<Client>> GameManager::RecognizeClient(int index)
 	{
 		if (clients[i]->GetIndex() == index)
 			referenceClient = clients[i];
-		else
+		else if (i > index)
 			otherClients.push_back(clients[i]);
 	}
 

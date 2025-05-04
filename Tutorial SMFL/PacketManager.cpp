@@ -161,9 +161,10 @@ void PacketManager::Init()
 		}
 		std::vector<std::shared_ptr<Client>> otherClients = GAME.RecognizeClient(myIndex);
 		EVENT_MANAGER.Emit(DISCONNECT, guid, customPacket);
+		NETWORK.StartClientConnections(otherClients, GAME.GetReferenceClient()->GetNumPort());
 		NETWORK.DisconnectServer();
 		GAME.StartGame();
-		NETWORK.StartClientConnections(otherClients, GAME.GetReferenceClient()->GetNumPort());
+		
 		});
 
 	EVENT_MANAGER.Subscribe(END_TURN, [this](std::string guid, CustomPacket& customPacket) {
@@ -187,6 +188,10 @@ void PacketManager::Init()
 
 		customPacket.packet >> responseMessage;
 		GAME.EndTurn();
+		});
+
+	EVENT_MANAGER.Subscribe(DISCONNECT, [this](std::string guid, CustomPacket& customPacket) {
+		std::cout << "Server disconnect" << std::endl;
 		});
 }
 
