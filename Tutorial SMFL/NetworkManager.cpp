@@ -78,7 +78,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 		runningClients = true;
 
-		for (int i = 0; clients.size(); i++)
+		for (int i = 0; i < clients.size(); i++)
 		{
 			if (i >= myIndex)
 				continue;
