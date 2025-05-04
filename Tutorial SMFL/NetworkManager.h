@@ -29,6 +29,7 @@ private:
 
 	std::thread networkThread;
 	std::atomic<bool> running = false;
+	std::atomic<bool> runningClients = false;
 
 	int listeningPort;
 

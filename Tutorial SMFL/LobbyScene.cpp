@@ -33,7 +33,7 @@ void LobbyScene::Update(sf::RenderWindow& window, const sf::Event& event)
 
 void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 {
-	if (textBackGround.getGlobalBounds().contains(mousePosition)) {
+	if (textBackGround[0].getGlobalBounds().contains(mousePosition)) {
 		inputText = std::string();
 		currentText = &idInformation[1];
 	}
@@ -108,7 +108,7 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
-	textBackGround = sf::RectangleShape();
+	textBackGround.push_back(sf::RectangleShape());
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -120,10 +120,10 @@ void LobbyScene::CreateTextField(sf::RenderWindow& window)
 		window.getSize().y / 2.f - 100.f
 	);
 
-	textBackGround.setSize({ 250.f, 50.f });
-	textBackGround.setFillColor(sf::Color::White);
-	textBackGround.setOrigin(textBackGround.getSize() / 2.f);
-	textBackGround.setPosition(position);
+	textBackGround[0].setSize({ 250.f, 50.f });
+	textBackGround[0].setFillColor(sf::Color::White);
+	textBackGround[0].setOrigin(textBackGround[0].getSize() / 2.f);
+	textBackGround[0].setPosition(position);
 
 	idInformation[0].setString("ID");
 	idInformation[0].setFillColor(sf::Color::Black);
@@ -154,10 +154,10 @@ void LobbyScene::Render(sf::RenderWindow& window)
 
 	for (sf::RectangleShape buton : buttons)
 		window.draw(buton);
-	window.draw(textBackGround);
+	for (sf::RectangleShape buton : textBackGround)
+		window.draw(buton);
 	for (sf::Text text : buttonsTexts)
 		window.draw(text);
-
 	for (sf::Text text : idInformation)
 		window.draw(text);
 

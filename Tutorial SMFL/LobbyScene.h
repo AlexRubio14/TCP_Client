@@ -5,7 +5,7 @@ class LobbyScene : public Scene
 {
 private:
     std::vector<sf::RectangleShape> buttons;
-    sf::RectangleShape textBackGround;
+    std::vector<sf::RectangleShape> textBackGround;
     std::vector<sf::Text> buttonsTexts;
     std::vector<sf::Text> idInformation;
 

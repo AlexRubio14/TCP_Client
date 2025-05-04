@@ -69,8 +69,10 @@ void NetworkManager::StartListeningForClients(sf::TcpListener& listener, const i
 void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort) {
 	std::thread listenerThread([this, clients, numPort]() {
 		StartListeningForClients(listener, numPort);
-		while (true) {
+		runningClients = true;
+		while (runningClients) {
 
+			Update();
 			std::shared_ptr<Client> matchingClient = nullptr;
 			sf::TcpSocket tempSocket;
 
@@ -124,6 +126,7 @@ void NetworkManager::DisconnectServer()
 
 void NetworkManager::DisconnectClient()
 {
+	runningClients = false;
 	for (int i = 0; i < GAME.GetClients().size(); i++)
 		GAME.GetClients()[i]->GetSocket().disconnect();
 }
@@ -132,14 +135,6 @@ void NetworkManager::Update()
 {
 	if (socketSelector.wait(sf::milliseconds(100)))
 	{
-		if (socketSelector.isReady(listener))
-		{
-			HandleNewConnection();
-		}
-		else
-		{
-			UpdateClient();
-		}
 		RecivePacket();
 	}
 }
@@ -172,6 +167,7 @@ void NetworkManager::UpdateClient()
 
 void NetworkManager::RecivePacket()
 {
+	std::cout << "Entra" << std::endl;
 	if (socketServer.receive(customPacket.packet) == sf::Socket::Status::Done)
 	{
 		PACKET_MANAGER.ProcessPacket(" ", customPacket);
