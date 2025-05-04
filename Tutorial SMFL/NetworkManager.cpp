@@ -13,9 +13,9 @@ bool NetworkManager::ConnectServer()
 	{
 		std::cout << "Connected" << std::endl;
 
-		socketServer.setBlocking(false);  
-		socketSelector.add(socketServer); 
-		running = true; 
+		socketServer.setBlocking(false);
+		socketSelector.add(socketServer);
+		running = true;
 
 		networkThread = std::thread([this]() {
 			while (running)
@@ -68,11 +68,13 @@ void NetworkManager::StartListeningForClients(const int numPort) {
 	}
 }
 
-void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex,const int myPort) {
+void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int myPort) {
 	if (clients.size() <= 0)
 		return;
 
 	clientThread = std::thread([this, clients, myIndex, myPort]() {
+
+		sf::SocketSelector clientSelector;
 
 		StartListeningForClients(myPort); //Start lsitening in my port\
 
@@ -91,13 +93,13 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 			if (resolved)
 			{
 				sf::IpAddress ip = *resolved;
-				std::cout << "conectadno a: " << ip.toString() <<  ":" << port << std::endl;
+				std::cout << "conectadno a: " << ip.toString() << ":" << port << std::endl;
 
 				sf::Socket::Status status = clients[i]->GetSocket().connect(ip, port);
 				if (status == sf::Socket::Status::Done) {
 					std::cout << "Connected to " << ip.toString() << std::endl;
 					clients[i]->GetSocket().setBlocking(false);
-					socketSelector.add(clients[i]->GetSocket());
+					clientSelector.add(clients[i]->GetSocket());
 				}
 				else {
 					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -120,7 +122,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 				std::shared_ptr<Client> matchingClient = nullptr;
 
-				for (std::shared_ptr<Client> client : clients) 
+				for (std::shared_ptr<Client> client : clients)
 				{
 					if (client->GetIp() == clientIp) {
 						matchingClient = client;
@@ -129,12 +131,13 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 
 
-				if (matchingClient) 
+				if (matchingClient)
 				{
 					std::unique_ptr newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
+					clientSelector.remove(matchingClient->GetSocket());
 					matchingClient->SetSocket(std::move(newSocket));
-					socketSelector.add(matchingClient->GetSocket());
+					clientSelector.add(matchingClient->GetSocket());
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
 				else {
@@ -142,10 +145,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 			}
 
-			if (socketSelector.wait(sf::milliseconds(10)))
+			if (clientSelector.wait(sf::milliseconds(10)))
 			{
 				std::cout << "Selector ready, checking clients..." << std::endl;
-				UpdateClients();
+				UpdateClients(clientSelector);
 			}
 			else {
 				std::cout << "Selector timed out with no activity." << std::endl;
@@ -188,13 +191,13 @@ void NetworkManager::Update()
 	}
 }
 
-void NetworkManager::UpdateClients()
+void NetworkManager::UpdateClients(sf::SocketSelector& clientSelector)
 {
-	std::cout << "CLIENTS WAITING FOR SEX: " << GAME.GetClients().size() << std::endl;
+	std::cout << "Clients vector size: " << GAME.GetClients().size() << std::endl;
 
 	for (std::shared_ptr<Client> client : GAME.GetClients())
 	{
-		if (client && socketSelector.isReady(client->GetSocket()))
+		if (client && clientSelector.isReady(client->GetSocket()))
 		{
 			std::cout << "estoy recibiendo un paquete" << std::endl;
 			client->HandleIncomingPackets();
@@ -232,6 +235,5 @@ void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
 }
 
 bool NetworkManager::IsConnected() const {
-	return socketState == Connected; 
+	return socketState == Connected;
 }
-
