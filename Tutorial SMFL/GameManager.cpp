@@ -1,6 +1,7 @@
 #include "GameManager.h"
 #include "TimeManager.h"
 #include <iostream>
+#include "NetworkManager.h"
 
 void GameManager::Init(sf::RenderWindow& _window)
 {
@@ -99,9 +100,15 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 
 void GameManager::RecognizeClient(int index)
 {
+	std::vector<std::shared_ptr<Client>> otherClients;
+
 	for (int i = 0; i < clients.size(); i++)
 	{
 		if (clients[i]->GetIndex() == index)
 			client = clients[i];
+		else
+			otherClients.push_back(clients[i]);
 	}
+
+	NETWORK.StartClientConnections(otherClients);
 }

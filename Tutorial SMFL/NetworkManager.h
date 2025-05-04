@@ -2,6 +2,7 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 #include <string>
+#include "Client.h"
 
 #include "CustomPacket.h"
 #include <thread>
@@ -37,7 +38,10 @@ public:
 	}
 
 	bool ConnectServer();
+	void ConnectClients(std::vector<std::shared_ptr<Client>> clients);
+	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients);
 	void DisconnectServer();
+	void StartListeningForClients(sf::TcpListener& listener);
 
 	void Update();
 	void HandleNewConnection();

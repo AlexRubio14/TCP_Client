@@ -7,7 +7,7 @@
 class Client
 {
 private:
-    const std::string ip;
+    std::string ip;
     const int index;
     const std::string username;
     std::unique_ptr<sf::TcpSocket> socket;
@@ -45,6 +45,7 @@ public:
     inline std::vector<std::shared_ptr<Token>> GetTokens() const { return tokens; }
     inline const std::string GetName() const { return name; }
     inline const int GetIndex() const { return index; }
+    inline std::string GetIp() const { return ip; }
 
     inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
     inline void SetExtraMoves(const bool state) { extraMoves = state; }
