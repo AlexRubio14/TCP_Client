@@ -7,8 +7,8 @@
 #include "GameManager.h"
 #include <iostream>
 
-Client::Client(const std::string& _ip, const std::string& _name, const sf::Color& _color, const int& _index)
-	: ip(_ip), name(_name), color(_color), index(_index)
+Client::Client(const std::string& _ip, const std::string& _name, const sf::Color& _color, const int& _index, const int& _portNum)
+	: ip(_ip), name(_name), color(_color), index(_index), numPort(_portNum)
 {
     socket = std::make_unique<sf::TcpSocket>();
 	extraMoves = false;

@@ -1,6 +1,11 @@
 #include "NetworkManager.h"
 #include "PacketManager.h"
 
+
+NetworkManager::NetworkManager()
+{
+	listeningPort = 55001;
+}
 bool NetworkManager::ConnectServer()
 {
 	if (socketServer.connect(SERVER_IP, SERVER_PORT) == sf::Socket::Status::Done)
@@ -28,19 +33,18 @@ bool NetworkManager::ConnectServer()
 void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients) {
 	for (int i = 0; i < clients.size(); i++) {
 		std::string ipStr = clients[i]->GetIp();
-		auto resolved = sf::IpAddress::resolve(ipStr);
+		std::optional<sf::IpAddress> resolved = sf::IpAddress::resolve(ipStr);
 
 		if (resolved) {
 			sf::IpAddress ip = *resolved;
 			std::cout << "Resolved IP: " << ip.toString() << std::endl;
 
-			sf::TcpSocket clientSocket;
-			sf::Socket::Status status = clientSocket.connect(ip, SERVER_PORT);
+			sf::Socket::Status status = clients[i]->GetSocket().connect(ip, listeningPort + clients[i]->GetIndex());
 
 			if (status == sf::Socket::Status::Done) {
 				std::cout << "Connected to " << ip.toString() << std::endl;
-				clientSocket.setBlocking(false);
-				socketSelector.add(clientSocket);
+				clients[i]->GetSocket().setBlocking(false);
+				socketSelector.add(clients[i]->GetSocket());
 			}
 			else {
 				std::cerr << "Failed to connect to " << std::endl;
@@ -52,25 +56,48 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 	}
 }
 
-void NetworkManager::StartListeningForClients(sf::TcpListener& listener) {
-	if (listener.listen(SERVER_PORT) == sf::Socket::Status::Done) {
-		std::cout << "Listening for incoming connections on port " << SERVER_PORT << std::endl;
+void NetworkManager::StartListeningForClients(sf::TcpListener& listener, const int numPort) {
+	if (listener.listen(numPort) == sf::Socket::Status::Done) {
+		std::cout << "Listening for incoming connections on port " << numPort << std::endl;
 	}
 	else {
-		std::cerr << "Error: Unable to start listener on port " << SERVER_PORT << std::endl;
+		std::cerr << "Error: Unable to start listener on port " << numPort << std::endl;
 	}
 }
 
-void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients) {
-	std::thread listenerThread([this]() {
-		sf::TcpListener listener;
-		StartListeningForClients(listener);
+void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int numPort) {
+	std::thread listenerThread([this, clients, numPort]() {
+		StartListeningForClients(listener, numPort);
 		while (true) {
-			sf::TcpSocket newClient;
-			if (listener.accept(newClient) == sf::Socket::Status::Done) {
-				std::cout << "New client connected: " << std::endl;
-				newClient.setBlocking(false);
-				socketSelector.add(newClient);
+
+			std::shared_ptr<Client> matchingClient = nullptr;
+			sf::TcpSocket tempSocket;
+
+			if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
+				std::optional<sf::IpAddress> clientIp = tempSocket.getRemoteAddress();
+				std::cout << "New client connected: " << clientIp->toString() << std::endl;
+
+				for (std::shared_ptr<Client> client : clients)
+				{
+					if (client->GetIp() == clientIp->toString())
+					{
+						matchingClient = client;
+						break;
+					}
+				}
+
+				if (matchingClient != nullptr)
+				{
+					matchingClient->GetSocket() = std::move(tempSocket);
+					matchingClient->GetSocket().setBlocking(false);
+					socketSelector.add(matchingClient->GetSocket());
+
+					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
+				}
+				else
+				{
+					std::cerr << "Client not found in the list: " << clientIp->toString() << std::endl;
+				}
 			}
 		}
 		});
@@ -79,8 +106,8 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 		ConnectClients(clients);
 		});
 
-	listenerThread.join();
-	connectThread.join();
+	listenerThread.detach();
+	connectThread.detach();
 }
 
 

@@ -135,13 +135,15 @@ void PacketManager::Init()
 
 		std::string ip;
 		std::string name;
-		int index;
+		int index, numPort;
 
 		GAME.Init(SCENE.GetWindow());
 		for (int i = 0; i < 2; i++)
 		{
-			customPacket.packet >> ip >> name >> index;
-			GAME.AddClient(ip, name, index);
+			customPacket.packet >> ip >> name >> index; 
+			numPort = NETWORK.GetListeningPort() + index;
+			GAME.AddClient(ip, name, index, numPort);
+			std::cout << "numPort: " << numPort << std::endl;
 		}
 
 		customPacket.packet >> ip >> name >> index;

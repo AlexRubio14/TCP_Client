@@ -10,6 +10,7 @@ private:
     std::string ip;
     const int index;
     const std::string username;
+    const int numPort;
     std::unique_ptr<sf::TcpSocket> socket;
 
     std::vector<std::shared_ptr<Token>> tokens;
@@ -20,7 +21,7 @@ private:
     bool extraMoves;
 
 public:
-    Client(const std::string& _ip, const std::string &_name, const sf::Color &_color, const int &_index);
+    Client(const std::string& _ip, const std::string &_name, const sf::Color &_color, const int &_index, const int& _portNum);
 
     void HandleIncomingPackets();
     //void InitializeClient(std::string _guid, std::string _username, std::unique_ptr<sf::TcpSocket> _socket);
@@ -46,6 +47,9 @@ public:
     inline const std::string GetName() const { return name; }
     inline const int GetIndex() const { return index; }
     inline std::string GetIp() const { return ip; }
+	inline int GetNumPort() const { return numPort; }
+
+	inline void SetSocket(std::unique_ptr<sf::TcpSocket> _socket) { socket = std::move(_socket); }
 
     inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
     inline void SetExtraMoves(const bool state) { extraMoves = state; }

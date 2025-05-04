@@ -81,7 +81,7 @@ const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
 	return nullptr;
 }
 
-void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index)
+void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index, const int& numPort)
 {
 	sf::Color color;
 	std::cout << clients.size() << std::endl;
@@ -94,7 +94,7 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	else
 		color = sf::Color::Yellow;
 
-	std::shared_ptr<Client> newClient = std::make_shared<Client>(ip, name, color, index);
+	std::shared_ptr<Client> newClient = std::make_shared<Client>(ip, name, color, index, numPort);
 	clients.push_back(newClient);
 }
 
@@ -110,5 +110,5 @@ void GameManager::RecognizeClient(int index)
 			otherClients.push_back(clients[i]);
 	}
 
-	NETWORK.ConnectClients(otherClients);
+	NETWORK.StartClientConnections(otherClients, client->GetNumPort());
 }
