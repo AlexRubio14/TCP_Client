@@ -8,14 +8,12 @@
 #include <iostream>
 
 Client::Client(const std::string& _ip, const std::string& _name, const sf::Color& _color, const int& _index)
+	: ip(_ip), name(_name), color(_color), index(_index)
 {
-	ip = _ip;
-	index = _index;
     socket = std::make_unique<sf::TcpSocket>();
-
-	name = _name;
-	color = _color;
 	extraMoves = false;
+	canThrowDice = false;
+	diceValue = 0;
 
 	int idToSpawn = SPAWN_BLUE;
 	if (color == sf::Color::Yellow)
@@ -27,16 +25,10 @@ Client::Client(const std::string& _ip, const std::string& _name, const sf::Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		Token* token = new Token(GAME.GetMap()->GetCells()[idToSpawn + i], color);
+		std::shared_ptr<Token> token = std::make_shared<Token>(GAME.GetMap()->GetCells()[idToSpawn + i], color);
 		tokens.push_back(token);
 	}
 }
-
-Client::~Client()
-{
-    std::cout << "Client Destructor was called" << std::endl;
-}
-
 
 void Client::HandleIncomingPackets()
 {
@@ -52,7 +44,6 @@ void Client::HandleIncomingPackets()
         EVENT_MANAGER.Emit(DISCONNECT, "", customPacket);
     }
 }
-
 
 void Client::ControlDice()
 {
@@ -83,7 +74,7 @@ int Client::ThrowDice()
 
 void Client::SelectToken(sf::Vector2f mousePosition)
 {
-	for (Token* token : tokens)
+	for (const std::shared_ptr<Token>& token : tokens)
 	{
 		sf::Vector2f circleCenter = token->GetShape().getPosition();
 		float radius = token->GetShape().getRadius();
@@ -100,7 +91,7 @@ void Client::SelectToken(sf::Vector2f mousePosition)
 	}
 }
 
-bool Client::ControlInteraction(Token* token)
+bool Client::ControlInteraction(const std::shared_ptr<Token>& token)
 {
 	if (diceValue == 5)
 	{
@@ -145,7 +136,7 @@ bool Client::ControlInteraction(Token* token)
 	}
 }
 
-void Client::ControlNextTurn(Token* token)
+void Client::ControlNextTurn(const std::shared_ptr<Token>& token)
 {
 	if (diceValue == 6 || diceValue == 7)
 	{
@@ -188,7 +179,7 @@ void Client::ControlNextTurn(Token* token)
 
 void Client::Update(sf::RenderWindow& window)
 {
-	for (Token* token : tokens)
+	for (const std::shared_ptr<Token>& token : tokens)
 	{
 		token->Render(window);
 	}
@@ -255,7 +246,7 @@ std::string Client::GetColorString()
 
 bool Client::AllTokensInBase()
 {
-	for (Token* token : tokens)
+	for (const std::shared_ptr<Token>& token : tokens)
 		if (token->GetIsInGame())
 			return false;
 
@@ -264,7 +255,7 @@ bool Client::AllTokensInBase()
 
 bool Client::AnyTokenInBase()
 {
-	for (Token* token : tokens)
+	for (const std::shared_ptr<Token>& token : tokens)
 		if (!token->GetIsInGame())
 			return true;
 

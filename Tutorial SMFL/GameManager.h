@@ -7,15 +7,14 @@
 class GameManager
 {
 private:
-	Map* map;
-	std::vector<Client*> clients;
+	std::unique_ptr<Map> map;
+	std::vector<std::shared_ptr<Client>> clients;
 
-	Client* currentClient;
-	Client* client;
+	std::shared_ptr<Client> currentClient;
+	std::shared_ptr<Client> client;
 	int currentClientIndex;
 
 	GameManager() = default;
-
 	GameManager(const GameManager&) = delete;
 	GameManager& operator =(const GameManager&) = delete;
 
@@ -34,13 +33,13 @@ public:
 	void EndTurn();
 	void StartGame();
 
-	Token* TokenInPosition(Token* tokenChecked);
+	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
 
 	void AddClient(const std::string& ip, const std::string& name, const int& index);
 	void RecognizeClient(int index);
 
-	inline Map* GetMap() { return map; }
-	inline Client* GetCurrentClient() { return currentClient; }
-	inline std::vector<Client*> GetClients() { return clients; }
+	inline const std::unique_ptr<Map>& GetMap() { return map; }
+	inline const std::shared_ptr<Client>& GetCurrentClient() { return currentClient; }
+	inline const std::vector<std::shared_ptr<Client>>& GetClients() { return clients; }
 };
 

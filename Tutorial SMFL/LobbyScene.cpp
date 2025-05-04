@@ -5,7 +5,6 @@
 
 LobbyScene::LobbyScene() : Scene()
 {
-
 }
 
 void LobbyScene::Enter(sf::RenderWindow& window)
@@ -17,7 +16,6 @@ void LobbyScene::Enter(sf::RenderWindow& window)
 	{
 		CreateButtons(window, i);
 	}
-
 
 	currentText = nullptr;
 }

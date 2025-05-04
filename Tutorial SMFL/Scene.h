@@ -13,8 +13,8 @@ protected:
     const std::size_t idMax = 5;
 
 public:
-    virtual ~Scene() = default;
     Scene();  
+    virtual ~Scene();
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
 
