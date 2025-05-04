@@ -14,7 +14,7 @@ bool NetworkManager::ConnectServer()
 		std::cout << "Connected" << std::endl;
 
 		socketServer.setBlocking(false);  
-		serverSelector.add(socketServer); 
+		socketSelector.add(socketServer); 
 		running = true; 
 
 		networkThread = std::thread([this]() {
@@ -47,7 +47,7 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 			if (status == sf::Socket::Status::Done) {
 				std::cout << "Connected to " << ip.toString() << std::endl;
 				clients[i]->GetSocket().setBlocking(false);
-				serverSelector.add(clients[i]->GetSocket());
+				socketSelector.add(clients[i]->GetSocket());
 			}
 			else {
 				std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -59,7 +59,7 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 	}
 }
 
-void NetworkManager::StartListeningForClients(sf::TcpListener& listener, const int numPort) {
+void NetworkManager::StartListeningForClients(const int numPort) {
 	if (listener.listen(numPort) == sf::Socket::Status::Done) {
 		std::cout << "Listening for incoming connections on port " << numPort << std::endl;
 	}
@@ -74,7 +74,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 	clientThread = std::thread([this, clients, myIndex, myPort]() {
 
-		StartListeningForClients(listener, myPort); //Start lsitening in my port\
+		StartListeningForClients(myPort); //Start lsitening in my port\
 
 		runningClients = true;
 
@@ -97,7 +97,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				if (status == sf::Socket::Status::Done) {
 					std::cout << "Connected to " << ip.toString() << std::endl;
 					clients[i]->GetSocket().setBlocking(false);
-					clientSelector.add(clients[i]->GetSocket());
+					socketSelector.add(clients[i]->GetSocket());
 				}
 				else {
 					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -134,7 +134,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 					std::unique_ptr newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
 					matchingClient->SetSocket(std::move(newSocket));
-					clientSelector.add(matchingClient->GetSocket());
+					socketSelector.add(matchingClient->GetSocket());
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
 				else {
@@ -142,7 +142,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 			}
 
-			if (clientSelector.wait(sf::milliseconds(10))) 
+			if (socketSelector.wait(sf::milliseconds(10))) 
 			{
 				UpdateClients(); 
 			}
@@ -157,6 +157,7 @@ void NetworkManager::DisconnectServer()
 {
 	std::lock_guard<std::mutex> lock(networkMutex);
 	if (IsConnected()) {
+		socketSelector.remove(socketServer);
 		socketServer.disconnect();
 		std::cout << "Server disconnected successfully" << std::endl;
 	}
@@ -174,7 +175,7 @@ void NetworkManager::DisconnectClient()
 
 void NetworkManager::Update()
 {
-	if (serverSelector.wait(sf::milliseconds(100)))
+	if (socketSelector.wait(sf::milliseconds(100)))
 	{
 		RecivePacket();
 	}
@@ -184,7 +185,7 @@ void NetworkManager::UpdateClients()
 {
 	for (std::shared_ptr<Client> client : GAME.GetClients())
 	{
-		if (client && clientSelector.isReady(client->GetSocket()))
+		if (client && socketSelector.isReady(client->GetSocket()))
 		{
 			std::cout << "estoy recibiendo un paquete" << std::endl;
 			client->HandleIncomingPackets();

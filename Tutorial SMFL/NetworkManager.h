@@ -31,8 +31,7 @@ private:
 	CustomPacket customPacket;
 
 	sf::TcpListener listener;
-	sf::SocketSelector serverSelector;
-	sf::SocketSelector clientSelector;
+	sf::SocketSelector socketSelector;
 
 	std::thread networkThread;
 	std::thread clientThread;
@@ -54,8 +53,8 @@ public:
 
 	bool ConnectServer();
 	void ConnectClients(std::vector<std::shared_ptr<Client>> clients);
-	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int basePort);
-	void StartListeningForClients(sf::TcpListener& listener, const int numPort);
+	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int myPort);
+	void StartListeningForClients(const int numPort);
 	void DisconnectServer();
 	void DisconnectClient();
 
@@ -66,7 +65,7 @@ public:
 	bool IsConnected() const;
 
 	inline sf::TcpSocket& GetSocketServer() { return socketServer; }
-	inline sf::SocketSelector GetSocketSelector() { return serverSelector; }
+	inline sf::SocketSelector& GetSocketSelector() { return socketSelector; }
 	inline sf::TcpListener& GetListener() { return listener; }
 	inline int GetListeningPort() const { return listeningPort; }
 };
