@@ -182,9 +182,9 @@ void NetworkManager::RecivePacket()
 
 void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
 {
-	if (client->GetSocket().receive(customPacket.packet) == sf::Socket::Status::Done)
+	if (client->GetSocket().receive(customPacketClient.packet) == sf::Socket::Status::Done)
 	{
-		PACKET_MANAGER.ProcessPacket(" ", customPacket);
+		PACKET_MANAGER.ProcessPacket(" ", customPacketClient);
 	}
 	else
 	{
