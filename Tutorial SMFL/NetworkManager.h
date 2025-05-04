@@ -23,6 +23,7 @@ private:
 
 	sf::TcpSocket socketServer;
 	CustomPacket customPacket;
+	CustomPacket customPacketClient;
 
 	sf::TcpListener listener;
 	sf::SocketSelector socketSelector;
