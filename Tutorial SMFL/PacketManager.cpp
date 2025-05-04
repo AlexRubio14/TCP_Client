@@ -207,7 +207,7 @@ void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, Cus
 {
 	std::cout << responsePacket.type << std::endl;
 	if (client->GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
-		std::cout << "Message sent to client " << std::endl;
+		std::cout << "Message sent to client: "<<client->GetIp()<< " "<<client->GetUsername()<<" "<<client->GetNumPort() << std::endl;
 	else
 		std::cerr << "Error sending the message to client" << std::endl;
 }

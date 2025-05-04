@@ -82,7 +82,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 		for (int i = 0; i < clients.size(); i++)
 		{
-			if (i >= myIndex)
+			if (i == myIndex)
 				continue;
 
 			std::string ipStr = clients[i]->GetIp();
@@ -100,6 +100,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 					std::cout << "Connected to " << ip.toString() << std::endl;
 					clients[i]->GetSocket().setBlocking(false);
 					clientSelector.add(clients[i]->GetSocket());
+
+					sf::Packet packet;
+					packet << "ping";
+					clients[i]->GetSocket().send(packet);
 				}
 				else {
 					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -137,6 +141,9 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 					newSocket->setBlocking(false);
 					clientSelector.remove(matchingClient->GetSocket());
 					matchingClient->SetSocket(std::move(newSocket));
+					if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
+						std::cerr << "Warning: socket mismatch after SetSocket!" << std::endl;
+					}
 					clientSelector.add(matchingClient->GetSocket());
 					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
 				}
