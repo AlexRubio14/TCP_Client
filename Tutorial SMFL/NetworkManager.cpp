@@ -142,9 +142,13 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 				}
 			}
 
-			if (socketSelector.wait(sf::milliseconds(10))) 
+			if (socketSelector.wait(sf::milliseconds(10)))
 			{
-				UpdateClients(); 
+				std::cout << "Selector ready, checking clients..." << std::endl;
+				UpdateClients();
+			}
+			else {
+				std::cout << "Selector timed out with no activity." << std::endl;
 			}
 		}
 		});
@@ -177,12 +181,17 @@ void NetworkManager::Update()
 {
 	if (socketSelector.wait(sf::milliseconds(100)))
 	{
-		RecivePacket();
+		if (socketSelector.isReady(socketServer))
+		{
+			RecivePacket();
+		}
 	}
 }
 
 void NetworkManager::UpdateClients()
 {
+	std::cout << "CLIENTS WAITING FOR SEX: " << GAME.GetClients().size() << std::endl;
+
 	for (std::shared_ptr<Client> client : GAME.GetClients())
 	{
 		if (client && socketSelector.isReady(client->GetSocket()))
@@ -205,7 +214,7 @@ void NetworkManager::RecivePacket()
 	}
 	else
 	{
-		std::cout << "Packet not received" << std::endl;
+		std::cout << "Packet not received Server" << std::endl;
 	}
 }
 
@@ -218,7 +227,7 @@ void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
 	}
 	else
 	{
-		std::cout << "Packet not received" << std::endl;
+		std::cout << "Packet not received Client" << std::endl;
 	}
 }
 
