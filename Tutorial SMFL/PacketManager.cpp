@@ -171,13 +171,13 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(END_TURN, [this](std::string guid, CustomPacket& customPacket) {
 		std::cout << "End Turn" << std::endl;
 
-		CustomPacket responsePacket(END_TURN_SUCCES);
-		responsePacket.packet << "Turn ended";
-
 		for (int i = 0; i < GAME.GetClients().size(); i++)
 		{
 			if (GAME.GetReferenceClient()->GetIndex() == GAME.GetClients()[i]->GetIndex())
 				continue;
+
+			CustomPacket responsePacket(END_TURN_SUCCES);
+			responsePacket.packet << "Turn ended";
 		
 			SendPacketToClient(GAME.GetClients()[i], responsePacket);
 		}

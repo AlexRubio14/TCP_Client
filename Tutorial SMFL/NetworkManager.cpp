@@ -133,7 +133,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 				if (matchingClient)
 				{
-					std::unique_ptr newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
+					std::unique_ptr<sf::TcpSocket> newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
 					clientSelector.remove(matchingClient->GetSocket());
 					matchingClient->SetSocket(std::move(newSocket));
