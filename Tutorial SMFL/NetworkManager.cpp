@@ -25,8 +25,10 @@ bool NetworkManager::ConnectServer()
 	return false;
 }
 
-void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients) {
-	for (int i = 0; i < clients.size(); i++) {
+void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients) 
+{
+	for (int i = 0; i < clients.size(); i++)
+	{
 		std::string ipStr = clients[i]->GetIp();
 		auto resolved = sf::IpAddress::resolve(ipStr);
 
@@ -34,53 +36,23 @@ void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients
 			sf::IpAddress ip = *resolved;
 			std::cout << "Resolved IP: " << ip.toString() << std::endl;
 
-			sf::TcpSocket clientSocket;
-			sf::Socket::Status status = clientSocket.connect(ip, SERVER_PORT);
-
-			if (status == sf::Socket::Status::Done) {
+			if (socketServer.connect(ip, SERVER_PORT) == sf::Socket::Status::Done)
+			{
 				std::cout << "Connected to " << ip.toString() << std::endl;
-				clientSocket.setBlocking(false);
-				socketSelector.add(clientSocket);
+
+				socketServer.setBlocking(false);
+				socketSelector.add(socketServer);
 			}
-			else {
-				std::cerr << "Failed to connect to " << std::endl;
+			else
+			{
+				std::cerr << "Error connecting to " << ip.toString() << std::endl;
 			}
 		}
 		else {
 			std::cerr << "Failed to resolve IP: " << ipStr << std::endl;
 		}
 	}
-}
 
-void NetworkManager::StartListeningForClients(sf::TcpListener& listener) {
-	if (listener.listen(SERVER_PORT) == sf::Socket::Status::Done) {
-		std::cout << "Listening for incoming connections on port " << SERVER_PORT << std::endl;
-	}
-	else {
-		std::cerr << "Error: Unable to start listener on port " << SERVER_PORT << std::endl;
-	}
-}
-
-void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients) {
-	std::thread listenerThread([this]() {
-		sf::TcpListener listener;
-		StartListeningForClients(listener);
-		while (true) {
-			sf::TcpSocket newClient;
-			if (listener.accept(newClient) == sf::Socket::Status::Done) {
-				std::cout << "New client connected: " << std::endl;
-				newClient.setBlocking(false);
-				socketSelector.add(newClient);
-			}
-		}
-		});
-
-	std::thread connectThread([this, clients]() {
-		ConnectClients(clients);
-		});
-
-	listenerThread.join();
-	connectThread.join();
 }
 
 

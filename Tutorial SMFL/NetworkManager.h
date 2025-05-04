@@ -39,9 +39,7 @@ public:
 
 	bool ConnectServer();
 	void ConnectClients(std::vector<std::shared_ptr<Client>> clients);
-	void StartClientConnections(std::vector<std::shared_ptr<Client>> clients);
 	void DisconnectServer();
-	void StartListeningForClients(sf::TcpListener& listener);
 
 	void Update();
 	void HandleNewConnection();

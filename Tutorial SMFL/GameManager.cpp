@@ -110,5 +110,5 @@ void GameManager::RecognizeClient(int index)
 			otherClients.push_back(clients[i]);
 	}
 
-	NETWORK.StartClientConnections(otherClients);
+	NETWORK.ConnectClients(otherClients);
 }
