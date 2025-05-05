@@ -9,6 +9,11 @@ Scene::Scene()
 	currentText = new sf::Text(font);
 }
 
+Scene::~Scene()
+{
+	delete currentText;
+}
+
 void Scene::HandleEvent(sf::RenderWindow& window, const sf::Event& event)
 {
 	if (event.is<sf::Event::Closed>())

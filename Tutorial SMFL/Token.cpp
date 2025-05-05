@@ -2,12 +2,11 @@
 #include <iostream>
 #include "GameManager.h"
 
-Token::Token(Cell* _currentCell, sf::Color _color)
+Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color)
+	: currentCell(_currentCell), color(_color)
 {
-	currentCell = _currentCell;
 	originCell = currentCell;
 	isInGame = false;
-	color = _color;
 	shape = sf::CircleShape(TOKEN_RADIUS);
 	shape.setFillColor(_color);
 	shape.setPosition(currentCell->SetTokenInCell());
@@ -35,12 +34,12 @@ int Token::MoveToken(int moves)
 
 	for (int i = 0; i < moves; i++)
 	{
-		std::vector<Cell*> nextCells = currentCell->GetNextCells();
+		std::vector<std::shared_ptr<Cell>> nextCells = currentCell->GetNextCells();
 
 		if (nextCells[0]->GetNextCells().empty())
 			hasFinished = true;
 
-		Cell* cellToGo = nullptr;
+		std::shared_ptr<Cell> cellToGo = nullptr;
 
 		if (nextCells.size() == 2 && nextCells[1]->GetColor() == color)
 			cellToGo = currentCell->GetNextCells()[1];
@@ -66,11 +65,11 @@ int Token::MoveToken(int moves)
 
 	if (currentCell->GetTokensInCell() > 1)
 	{
-		Token* token = GAME.TokenInPosition(this);
+		std::shared_ptr<Token> token = GAME.TokenInPosition(this);
 		if (token->GetColor() != color)
 		{
 			token->ReturnToOriginalCell();
-			GAME.GetCurrentPlayer()->SetExtraMoves(true);
+			GAME.GetCurrentClient()->SetExtraMoves(true);
 			return 20;
 		}
 		else if (token != nullptr)
@@ -84,7 +83,7 @@ int Token::MoveToken(int moves)
 	{
 		std::cout << "La ficha ha llegado al final" << std::endl;
 		newDiceValue = 10;
-		GAME.GetCurrentPlayer()->SetExtraMoves(true);
+		GAME.GetCurrentClient()->SetExtraMoves(true);
 	}
 
 	return newDiceValue;

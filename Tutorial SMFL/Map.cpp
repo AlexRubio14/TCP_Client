@@ -21,7 +21,8 @@ void Map::CreateCells()
 {
 	for (int i = 1; i <= NUM_CELLS; i++)
 	{
-		Cell* newCell = new Cell(i, SetCellColor(i));
+		//std::shared_ptr<Cell> newCell = new Cell(i, SetCellColor(i));
+		std::shared_ptr<Cell> newCell = std::make_shared<Cell>(i, SetCellColor(i));
 		cells.push_back(newCell);
 	}
 }
@@ -31,11 +32,11 @@ void Map::SetNextCells()
 	//Setear el recorrido normal
 	for (int i = 0; i < WHITE_CELLS - 1; i++)
 	{
-		cells[i]->SetNextCells(cells[i + 1]);
+		cells[i]->AddNextCell(cells[i + 1]);
 	}
 
 	//Setear la ultima con la primera
-	cells[WHITE_CELLS - 1]->SetNextCells(cells[0]);
+	cells[WHITE_CELLS - 1]->AddNextCell(cells[0]);
 
 	int j = 0;
 	int spawnSeparation = 0;
@@ -49,20 +50,20 @@ void Map::SetNextCells()
 			for (int k = 0; k < SAVE_ZONE; k++)
 			{
 				i++;
-				cells[i]->SetNextCells(cells[spawnSeparation]);
+				cells[i]->AddNextCell(cells[spawnSeparation]);
 			}
 			j = 0;
 			spawnSeparation += SEPARATION_BETWEEN_SAVE_ZONE + 1;
 			continue;
 		}
-		cells[i]->SetNextCells(cells[i + 1]);
+		cells[i]->AddNextCell(cells[i + 1]);
 	}
 
 	//Setear las celdas con 2 celdas
-	cells[43]->SetNextCells(cells[44]);
-	cells[10]->SetNextCells(cells[53]);
-	cells[21]->SetNextCells(cells[62]);
-	cells[32]->SetNextCells(cells[71]);
+	cells[43]->AddNextCell(cells[44]);
+	cells[10]->AddNextCell(cells[53]);
+	cells[21]->AddNextCell(cells[62]);
+	cells[32]->AddNextCell(cells[71]);
 }
 
 void Map::CreateBases()
@@ -79,14 +80,14 @@ void Map::CreateBases()
 	}
 }
 
-void Map::SetPlayersName()
+void Map::SetClientsName()
 {
 	font = SCENE.GetCurrentScene()->GetFont();
 	sf::RectangleShape square = squares[0];
 
 	for (int i = 0; i< 4; i++)
 	{
-		names.push_back(new sf::Text(font));
+		names.emplace_back(std::make_shared<sf::Text>(font));
 		names[i]->setFillColor(sf::Color::Black);
 		names[i]->setString(" ");
 	}
@@ -125,7 +126,7 @@ void Map::CreateBoard(sf::RenderWindow& window)
 	squares[1].setOutlineThickness(10.f);
 	squares[1].setOutlineColor(sf::Color::Black);
 
-	SetPlayersName();
+	SetClientsName();
 }
 
 void Map::SetCellsPosition(sf::RenderWindow& window)
@@ -322,7 +323,7 @@ Map::Map(sf::RenderWindow& window)
 	CreateCells();
 	SetNextCells();
 	SetCellsPosition(window);
-	SetPlayersName();
+	SetClientsName();
 }
 
 Map::~Map()

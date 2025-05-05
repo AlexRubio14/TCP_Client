@@ -1,62 +1,66 @@
 #include "LobbyScene.h"
 #include "SceneManager.h"
 #include "NetworkManager.h"
+#include "EventManager.h"
 
 LobbyScene::LobbyScene() : Scene()
 {
-
 }
 
-void LobbyScene::enter(sf::RenderWindow& window)
+void LobbyScene::Enter(sf::RenderWindow& window)
 {
 	std::cout << "Enter Lobby Scene" << std::endl;
 
+	CreateTextField(window);
 	for (int i = 0; i < 2; i++)
 	{
 		CreateButtons(window, i);
 	}
-	CreateTextField(window);
 
 	currentText = nullptr;
 }
 
-void LobbyScene::exit()
+void LobbyScene::Exit()
 {
 	std::cout << "Exit Lobby Scene" << std::endl;
 }
 
-void LobbyScene::update(sf::RenderWindow& window, const sf::Event& event)
+void LobbyScene::Update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
-	NETWORK.Update();
 	Render(window);
 }
 
 void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 {
-	if (textBackGround.getGlobalBounds().contains(mousePosition)) {
+	if (textBackGround[0].getGlobalBounds().contains(mousePosition)) {
 		inputText = std::string();
-		currentText = textId;
+		currentText = &idInformation[1];
 	}
 
 	for (size_t i = 0; i < buttons.size(); ++i) {
 		if (buttons[i].getGlobalBounds().contains(mousePosition)) {
 			currentText = nullptr;
 
-			if (textId->getString().isEmpty())
+			if (idInformation[1].getString().isEmpty())
 				return;
 
 			if (i == 0)
 			{
 				//Mandar paquete con la información de la ID
-				std::cout << "Create Room" << std::endl;
-				SCENE.ChangeScene(new GameScene());
+				CustomPacket customPacket(CREATE_ROOM);
+				customPacket.packet << idInformation[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(CREATE_ROOM, " ", customPacket);
+				std::cout << "Create room Send" << std::endl;
 			}
 			else if (i == 1)
 			{
-				//Mandar paquete con la información de la ID y mirar si hay sala
-				SCENE.ChangeScene(new GameScene());
-				std::cout << "Join Room" << std::endl;
+				CustomPacket customPacket(JOIN_ROOM);
+				customPacket.packet << idInformation[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(JOIN_ROOM, " ", customPacket);
+				std::cout << "Join room Send" << std::endl;
 			}
 		}
 	}
@@ -97,46 +101,46 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 	buttonsTexts[id].setOrigin(sf::Vector2f(
 		textBounds.position.x + textBounds.size.x / 2.f,
 		textBounds.position.y + textBounds.size.y / 2.f
-	));;
+	));
 
 	buttonsTexts[id].setPosition(position);
 }
 
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
-	textBackGround = sf::RectangleShape();
-	textsInformation = new sf::Text(font);
-	textId = new sf::Text(font);
+	textBackGround.push_back(sf::RectangleShape());
+	idInformation.push_back(sf::Text(font));
+	idInformation.push_back(sf::Text(font));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
 		window.getSize().y / 2.f - 100.f
 	);
 
-	textBackGround.setSize({ 250.f, 50.f });
-	textBackGround.setFillColor(sf::Color::White);
-	textBackGround.setOrigin(textBackGround.getSize() / 2.f);
-	textBackGround.setPosition(position);
+	textBackGround[0].setSize({ 250.f, 50.f });
+	textBackGround[0].setFillColor(sf::Color::White);
+	textBackGround[0].setOrigin(textBackGround[0].getSize() / 2.f);
+	textBackGround[0].setPosition(position);
 
-	textsInformation->setString("ID");
-	textsInformation->setFillColor(sf::Color::Black);
+	idInformation[0].setString("ID");
+	idInformation[0].setFillColor(sf::Color::Black);
 
-	textId->setFillColor(sf::Color::Black);
+	idInformation[1].setFillColor(sf::Color::Black);
 
-	sf::FloatRect textInformationBounds = textsInformation->getLocalBounds();
-	textsInformation->setOrigin(sf::Vector2f(
+	sf::FloatRect textInformationBounds = idInformation[0].getLocalBounds();
+	idInformation[0].setOrigin(sf::Vector2f(
 		textInformationBounds.position.x + textInformationBounds.size.x / 2.f,
 		textInformationBounds.position.y + textInformationBounds.size.y / 2.f + 45
 	));
 
-	sf::FloatRect textBounds = textId->getLocalBounds();
-	textId->setOrigin(sf::Vector2f(
+	sf::FloatRect textBounds = idInformation[1].getLocalBounds();
+	idInformation[1].setOrigin(sf::Vector2f(
 		textBounds.position.x + textBounds.size.x / 2.f + 115,
 		textBounds.position.y + textBounds.size.y / 2.f + 20
 	));
 
-	textId->setPosition(position);
-	textsInformation->setPosition(position);
+	idInformation[1].setPosition(position);
+	idInformation[0].setPosition(position);
 }
 
 void LobbyScene::Render(sf::RenderWindow& window)
@@ -147,11 +151,12 @@ void LobbyScene::Render(sf::RenderWindow& window)
 
 	for (sf::RectangleShape buton : buttons)
 		window.draw(buton);
-	window.draw(textBackGround);
+	for (sf::RectangleShape buton : textBackGround)
+		window.draw(buton);
 	for (sf::Text text : buttonsTexts)
 		window.draw(text);
-	window.draw(*textsInformation);
-	window.draw(*textId);
+	for (sf::Text text : idInformation)
+		window.draw(text);
 
 	window.display();
 }

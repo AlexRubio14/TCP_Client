@@ -1,13 +1,14 @@
 #include "RegisterScene.h"
 #include "SceneManager.h"
 #include "NetworkManager.h"
+#include "EventManager.h"
 
 RegisterScene::RegisterScene() : Scene()
 {
 
 }
 
-void RegisterScene::enter(sf::RenderWindow& window)
+void RegisterScene::Enter(sf::RenderWindow& window)
 {
 	std::cout << "Enter Register Scene" << std::endl;
 	
@@ -54,7 +55,7 @@ void RegisterScene::CreateButtons(sf::RenderWindow& window, int id)
 	buttonsTexts[id].setOrigin(sf::Vector2f(
 		textBounds.position.x + textBounds.size.x / 2.f,
 		textBounds.position.y + textBounds.size.y / 2.f  
-	));;
+	));
 
 	buttonsTexts[id].setPosition(position);
 }
@@ -146,15 +147,19 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 
 			if (i == 0) 
 			{
-				//Mandar paquete con la información del nombre y password
-				std::cout << "Register Done"<<std::endl;
-				SCENE.ChangeScene(new LobbyScene());
+				CustomPacket customPacket(REGISTER);
+				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(REGISTER, " ", customPacket);
+				std::cout << "Register Send" << std::endl;
 			}
 			else if (i == 1) 
 			{
-				//Mandar paquete con la información del nombre y password y mirar si puede logear
-				SCENE.ChangeScene(new LobbyScene());
-				std::cout << "Login Done" << std::endl;
+				CustomPacket customPacket(LOGIN);
+				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
+
+				EVENT_MANAGER.Emit(LOGIN, " ", customPacket);
+				std::cout << "Login Send" << std::endl;
 			}
 		}
 	}
@@ -168,15 +173,14 @@ bool RegisterScene::EmptyInformation()
 	return false;
 }
 
-void RegisterScene::exit()
+void RegisterScene::Exit()
 {
 	std::cout << "Exit Register Scene" << std::endl;
 }
 
-void RegisterScene::update(sf::RenderWindow& window, const sf::Event& event)
+void RegisterScene::Update(sf::RenderWindow& window, const sf::Event& event)
 {
 	HandleEvent(window, event);
-	NETWORK.Update();
 	Render(window);
 }
 

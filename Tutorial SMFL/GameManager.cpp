@@ -1,48 +1,38 @@
 #include "GameManager.h"
 #include "TimeManager.h"
 #include <iostream>
+#include "NetworkManager.h"
+#include "EventManager.h"
 
-void GameManager::Init(Map* _map)
+void GameManager::Init(sf::RenderWindow& _window)
 {
-	map = _map;
-
-	Player* player1 = new Player("Crami", sf::Color::Red);
-	Player* player2 = new Player("Gemix", sf::Color::Green);
-	Player* player3 = new Player("Alex", sf::Color::Blue);
-	Player* player4 = new Player("Fran", sf::Color::Yellow);
-	players = std::vector<Player*>();
-	players.push_back(player1);
-	players.push_back(player2);
-	players.push_back(player3);
-	players.push_back(player4);
-
-	currentPlayerIndex = 0;
-	currentPlayer = players[currentPlayerIndex];
-
-	for (int i = 0; i < players.size(); i++)
-		map->SetName(i, players[i]->GetName());
-
-	StartTurn();
+	map = std::make_unique<Map>(_window);
 }
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 {
+
+	if (currentClient == nullptr)
+		return;
+
 	if (TIME.IsTurnTimeOver())
 	{
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
 	}
 
+	//if(referenceClient->GetIndex() == currentClient->GetIndex())
+	currentClient->HandleEvent(event, window);
+	HandleEvent(event, window);
+
 	window.clear();
 
 	map->Update(window);
-	for (Player* player : players)
-	{
-		player->Update(window);
-	}
-	HandleEvent(event, window);
 
-	currentPlayer->HandleEvent(event, window);
+	for (const std::shared_ptr<Client>& client : clients)
+	{
+		client->Update(window);
+	}
 
 	window.display();
 }
@@ -57,28 +47,70 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 
 void GameManager::StartTurn()
 {
-	currentPlayer->SetCanThrowDice(true);
-	currentPlayer->ResetDiceValue();
+	currentClient->SetCanThrowDice(true);
+	currentClient->ResetDiceValue();
 	TIME.StartTurn();
 }
 
 void GameManager::EndTurn()
 {
-	currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-	currentPlayer = players[currentPlayerIndex];
+	CustomPacket packet;
+	EVENT_MANAGER.Emit(END_TURN, " ", packet);
+	currentClientIndex = (currentClientIndex + 1) % clients.size();
+	currentClient = clients[currentClientIndex];
 	StartTurn();
 }
 
-Token* GameManager::TokenInPosition(Token* tokenChecked)
+void GameManager::StartGame()
 {
-	for (Player* player : players)
+	currentClientIndex = 0;
+	currentClient = clients[currentClientIndex];
+	StartTurn();
+}
+
+const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
+{
+	for (const std::shared_ptr<Client>& client : clients)
 	{
-		for (Token* token : player->GetTokens())
+		for (const std::shared_ptr<Token>& token : client->GetTokens())
 		{
-			if (token->GetCurrentCell() == tokenChecked->GetCurrentCell() && token != tokenChecked)
+			if (token->GetCurrentCell() == tokenChecked->GetCurrentCell() && token.get() != tokenChecked)
 				return token;
 		}
 	}
 
 	return nullptr;
+}
+
+void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index, const int& numPort)
+{
+	sf::Color color;
+	std::cout << clients.size() << std::endl;
+	if (clients.size() < 1)
+		color = sf::Color::Red;
+	else if (clients.size() < 2)
+		color = sf::Color::Green;
+	else if (clients.size() < 3)
+		color = sf::Color::Blue;
+	else
+		color = sf::Color::Yellow;
+
+	std::shared_ptr<Client> newClient = std::make_shared<Client>(ip, name, color, index, numPort);
+	clients.push_back(newClient);
+}
+
+void GameManager::RecognizeClient(int index)
+{
+	std::vector<std::shared_ptr<Client>> otherClients;
+
+	for (int i = 0; i < clients.size(); i++)
+	{
+		if (clients[i]->GetIndex() == index)
+			referenceClient = clients[i];
+	}
+
+	std::cout <<"NUM DE CLIENTES: " << clients.size() << std::endl;
+
+	for (int i = 0; i < clients.size(); i++)
+		map->SetName(i, clients[i]->GetName());
 }

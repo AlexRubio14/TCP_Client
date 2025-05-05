@@ -1,32 +1,32 @@
 #pragma once
 #include "Cell.h"
-
+#include <memory>
+#include <SFML/Graphics.hpp>
 
 #define TOKEN_RADIUS 15
 
 class Token
 {
 private:
-	Cell* currentCell = new Cell();
-	Cell* originCell = new Cell();
+	std::shared_ptr<Cell> currentCell;
+	std::shared_ptr<Cell> originCell;
 	bool isInGame;
-	sf::Color color;
+	const sf::Color color;
 	sf::CircleShape shape;
 
 public:
-	Token(Cell* _currentCell, sf::Color _color);
+	Token(std::shared_ptr<Cell> _currentCell, const sf::Color _color);
 
 	void Render(sf::RenderWindow& window);
 	int MoveToken(int moves);
 	void ReturnToOriginalCell();
 
-	inline Cell* GetCurrentCell() { return currentCell; }
-	inline Cell* GetOriginCell() { return originCell; }
-	inline bool GetIsInGame() { return isInGame; }
+	inline std::shared_ptr<Cell> GetCurrentCell() const { return currentCell; }
+	inline std::shared_ptr<Cell> GetOriginCell() const { return originCell; }
+	inline bool GetIsInGame() const { return isInGame; }
 	inline sf::CircleShape& GetShape() { return shape; }
-	inline sf::Color GetColor() { return color; }
-	inline void SetIsInGame(bool state) { isInGame = state; }
-	inline void SetCurrentCell(Cell* _currentCell) { currentCell = currentCell; }
+	inline sf::Color GetColor() const { return color; }
 
+	inline void SetIsInGame(const bool state) { isInGame = state; }
+	inline void SetCurrentCell(std::shared_ptr<Cell> _currentCell) { currentCell = _currentCell; }
 };
-

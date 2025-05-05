@@ -7,7 +7,7 @@ void SceneManager::InitScenes(Scene* scene)
 	window = new sf::RenderWindow(sf::VideoMode({ WIDTH, HEIGHT }), "Tutorial SMFL",
 		sf::Style::Titlebar | sf::Style::Close);
 	currentScene = scene;
-	currentScene->enter(*window);
+	currentScene->Enter(*window);
 
 	PACKET_MANAGER.Init();
 	PACKET_MANAGER.SendHandshake(" ");
@@ -16,9 +16,9 @@ void SceneManager::InitScenes(Scene* scene)
 
 void SceneManager::ChangeScene(Scene* scene)
 {
-	currentScene->exit();
+	currentScene->Exit();
 	currentScene = scene;
-	currentScene->enter(*window);
+	currentScene->Enter(*window);
 }
 
 void SceneManager::Update()
@@ -27,7 +27,7 @@ void SceneManager::Update()
 	{
 		while (const std::optional event = window->pollEvent())
 		{
-			currentScene->update(*window, *event);
+			currentScene->Update(*window, *event);
 		}
 	}
 

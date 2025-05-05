@@ -32,5 +32,6 @@ public:
 	void Update();
 
 	inline Scene* GetCurrentScene() { return currentScene; }
+	inline sf::RenderWindow& GetWindow() { return *window; }
 };
 

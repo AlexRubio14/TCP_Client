@@ -7,7 +7,6 @@
 class PacketManager
 {
 private:
-
     PacketManager() = default;
     PacketManager(const PacketManager&) = delete;
     PacketManager& operator=(const PacketManager&) = delete;
@@ -16,16 +15,17 @@ private:
 
     void HandleTest(sf::Packet& packet);
 
-
-
 public:
-
-    static PacketManager& Instance();
+    inline static PacketManager& Instance()
+    {
+        static PacketManager manager;
+        return manager;
+    }
 
     void Init();
 
     void SendHandshake(const std::string guid);
-    void ProcessPacket(std::string guid, CustomPacket customPacket);
+    void ProcessPacket(std::string guid, CustomPacket& customPacket);
 
     void SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket);
     void SendPacketToServer(CustomPacket& responsePacket);

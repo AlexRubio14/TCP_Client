@@ -11,19 +11,19 @@
 class Map
 {
 private:
-	std::vector<Cell*> cells;
+	std::vector<std::shared_ptr<Cell>> cells;
 
 	//Map
 	std::vector<sf::RectangleShape> squares;
 	std::vector<sf::CircleShape> bases;
-	std::vector<sf::Text*> names;
+	std::vector<std::shared_ptr<sf::Text>> names;
 	sf::Font font;
 	
 	sf::Color SetCellColor(int _id);
 	void CreateCells();
 	void SetNextCells();
 	void CreateBases();
-	void SetPlayersName();
+	void SetClientsName();
 	void CreateBoard(sf::RenderWindow& window);
 	void Render(sf::RenderWindow& window);
 	void SetCellsPosition(sf::RenderWindow& window);
@@ -40,7 +40,7 @@ public:
 
 	void Update(sf::RenderWindow& window);
 	
-	inline std::vector<Cell*> GetCells() { return cells; }
-	inline void SetName(int id, std::string name) { names[id]->setString(name); }
+	inline std::vector<std::shared_ptr<Cell>> GetCells() const { return cells; }
+	inline void SetName(const int id, const std::string name) { names[id]->setString(name); }
 };
 
