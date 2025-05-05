@@ -16,8 +16,8 @@ enum ConnectionState {
 #define NETWORK NetworkManager::Instance()
 
 #define SERVER_PORT 55000
-const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
-//const sf::IpAddress SERVER_IP = sf::IpAddress(127,0,0,1);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
+const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
 
 class NetworkManager
 {

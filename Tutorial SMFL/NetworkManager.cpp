@@ -117,7 +117,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 
 		while (runningClients) {
-
+			std::cout << "Estoy runeando" << std::endl;
 			sf::TcpSocket tempSocket;
 
 			if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
@@ -187,7 +187,7 @@ void NetworkManager::DisconnectServer()
 
 void NetworkManager::DisconnectClient()
 {
-	runningClients = false;
+	//runningClients = false;
 
 	for (int i = 0; i < GAME.GetClients().size(); i++)
 		GAME.GetClients()[i]->GetSocket().disconnect();
