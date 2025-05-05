@@ -11,7 +11,7 @@ private:
     const int index;
     const std::string username;
     const int numPort;
-    std::unique_ptr<sf::TcpSocket> socket;
+    std::shared_ptr<sf::TcpSocket> socket;
 
     std::vector<std::shared_ptr<Token>> tokens;
     std::string name;
@@ -49,7 +49,7 @@ public:
     inline std::string GetIp() const { return ip; }
 	inline int GetNumPort() const { return numPort; }
 
-	inline void SetSocket(std::unique_ptr<sf::TcpSocket> _socket) { socket = std::move(_socket); }
+	inline void SetSocket(std::shared_ptr<sf::TcpSocket> _socket) { socket = _socket; }
 
     inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
     inline void SetExtraMoves(const bool state) { extraMoves = state; }
