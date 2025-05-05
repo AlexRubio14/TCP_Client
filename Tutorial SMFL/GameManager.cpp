@@ -109,6 +109,8 @@ void GameManager::RecognizeClient(int index)
 			referenceClient = clients[i];
 	}
 
+	std::cout <<"NUM DE CLIENTES: " << clients.size() << std::endl;
+
 	for (int i = 0; i < clients.size(); i++)
 		map->SetName(i, clients[i]->GetName());
 }

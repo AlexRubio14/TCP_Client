@@ -5,7 +5,7 @@
 
 NetworkManager::NetworkManager()
 {
-	listeningPort = 55004;
+	listeningPort = 55001;
 }
 bool NetworkManager::ConnectServer()
 {

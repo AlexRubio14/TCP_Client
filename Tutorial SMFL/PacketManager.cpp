@@ -133,7 +133,7 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(START_GAME, [this](std::string guid, CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
-		int numPlayers = 4;
+		int numPlayers = 2;
 		std::string ip, name;
 		int index, numPort, myIndex = -1;
 
@@ -145,10 +145,11 @@ void PacketManager::Init()
 
 			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << std::endl;
 
-			if (ip == sf::IpAddress::getPublicAddress()->toString())
+			if (ip == sf::IpAddress::getLocalAddress()->toString())
 				myIndex = index;
 
 			numPort = NETWORK.GetListeningPort() + index;
+
 			GAME.AddClient(ip, name, index, numPort);
 
 			std::cout << "Client added: IP = " << ip << ", Port = " << numPort << std::endl;
