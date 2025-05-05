@@ -121,12 +121,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 
 			while (runningClients) {
-				std::cout << "Estoy runeando" << std::endl;
 				sf::TcpSocket tempSocket;
 
 				if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
 					std::string clientIp = tempSocket.getRemoteAddress()->toString();
-					std::cout << "New client connected: " << clientIp << std::endl;
 
 					std::shared_ptr<Client> matchingClient = nullptr;
 
