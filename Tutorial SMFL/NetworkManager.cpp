@@ -133,7 +133,7 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 				if (matchingClient)
 				{
-					std::unique_ptr<sf::TcpSocket> newSocket = std::make_unique<sf::TcpSocket>(std::move(tempSocket));
+					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
 					clientSelector.remove(matchingClient->GetSocket());
 					matchingClient->SetSocket(std::move(newSocket));
@@ -173,6 +173,7 @@ void NetworkManager::DisconnectServer()
 	if (IsConnected()) {
 		socketSelector.remove(socketServer);
 		socketServer.disconnect();
+		running = false;
 		std::cout << "Server disconnected successfully" << std::endl;
 	}
 	else {
@@ -183,6 +184,7 @@ void NetworkManager::DisconnectServer()
 void NetworkManager::DisconnectClient()
 {
 	runningClients = false;
+
 	for (int i = 0; i < GAME.GetClients().size(); i++)
 		GAME.GetClients()[i]->GetSocket().disconnect();
 }
