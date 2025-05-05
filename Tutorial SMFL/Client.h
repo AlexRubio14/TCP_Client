@@ -49,7 +49,7 @@ public:
     inline std::string GetIp() const { return ip; }
 	inline int GetNumPort() const { return numPort; }
 
-	inline void SetSocket(std::shared_ptr<sf::TcpSocket> _socket) { socket = _socket; }
+	inline void SetSocket(const std::shared_ptr<sf::TcpSocket>& _socket) { socket = _socket; }
 
     inline void SetCanThrowDice(const bool state) { canThrowDice = state; }
     inline void SetExtraMoves(const bool state) { extraMoves = state; }

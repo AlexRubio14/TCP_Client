@@ -137,10 +137,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 				if (matchingClient)
 				{
-					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(tempSocket);
+					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
 					newSocket->setBlocking(false);
 					clientSelector.remove(matchingClient->GetSocket());
-					matchingClient->SetSocket(newSocket);
+					matchingClient->SetSocket(std::move(newSocket));
 
 
 					if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
