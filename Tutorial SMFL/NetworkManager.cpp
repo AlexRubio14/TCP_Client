@@ -100,6 +100,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 					std::cout << "Connected to " << ip.toString() << std::endl;
 					clients[i]->GetSocket().setBlocking(false);
 					clientSelector.add(clients[i]->GetSocket());
+
+					sf::Packet packet;
+					packet << "ping";
+					clients[i]->GetSocket().send(packet);
 				}
 				else {
 					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
@@ -133,10 +137,10 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 
 				if (matchingClient)
 				{
-					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
+					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(tempSocket);
 					newSocket->setBlocking(false);
 					clientSelector.remove(matchingClient->GetSocket());
-					matchingClient->SetSocket(std::move(newSocket));
+					matchingClient->SetSocket(newSocket);
 
 
 					if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
