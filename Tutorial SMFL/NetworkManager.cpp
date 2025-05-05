@@ -72,100 +72,110 @@ void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>>
 	if (clients.size() <= 0)
 		return;
 
+	
 	clientThread = std::thread([this, clients, myIndex, myPort]() {
 
-		sf::SocketSelector clientSelector;
-
-		StartListeningForClients(myPort); //Start lsitening in my port\
-
-		runningClients = true;
-
-		for (int i = 0; i < clients.size(); i++)
+		try
 		{
-			if (i == myIndex)
-				continue;
+			sf::SocketSelector clientSelector;
 
-			std::string ipStr = clients[i]->GetIp();
-			int port = clients[i]->GetNumPort();
+			StartListeningForClients(myPort); //Start lsitening in my port\
 
-			std::optional<sf::IpAddress> resolved = sf::IpAddress::resolve(ipStr);
+			runningClients = true;
+			listener.setBlocking(false);
 
-			if (resolved)
+			for (int i = 0; i < clients.size(); i++)
 			{
-				sf::IpAddress ip = *resolved;
-				std::cout << "conectadno a: " << ip.toString() << ":" << port << std::endl;
+				if (i == myIndex)
+					continue;
 
-				sf::Socket::Status status = clients[i]->GetSocket().connect(ip, port);
-				if (status == sf::Socket::Status::Done) {
-					std::cout << "Connected to " << ip.toString() << std::endl;
-					clients[i]->GetSocket().setBlocking(false);
-					clientSelector.add(clients[i]->GetSocket());
+				std::string ipStr = clients[i]->GetIp();
+				int port = clients[i]->GetNumPort();
 
-					sf::Packet packet;
-					packet << "ping";
-					clients[i]->GetSocket().send(packet);
-				}
-				else {
-					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
-				}
-			}
-			else
-			{
-				std::cerr << "Failed to resolve IP: " << ipStr << std::endl;
-			}
-		}
+				std::optional<sf::IpAddress> resolved = sf::IpAddress::resolve(ipStr);
 
-
-		while (runningClients) {
-
-			sf::TcpSocket tempSocket;
-
-			if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
-				std::string clientIp = tempSocket.getRemoteAddress()->toString();
-				std::cout << "New client connected: " << clientIp << std::endl;
-
-				std::shared_ptr<Client> matchingClient = nullptr;
-
-				for (std::shared_ptr<Client> client : clients)
+				if (resolved)
 				{
-					if (client->GetIp() == clientIp) {
-						matchingClient = client;
-						break;
+					sf::IpAddress ip = *resolved;
+					std::cout << "conectadno a: " << ip.toString() << ":" << port << std::endl;
+
+					sf::Socket::Status status = clients[i]->GetSocket().connect(ip, port);
+					if (status == sf::Socket::Status::Done) {
+						std::cout << "Connected to " << ip.toString() << std::endl;
+						clients[i]->GetSocket().setBlocking(false);
+						clientSelector.add(clients[i]->GetSocket());
+
+						sf::Packet packet;
+						packet << "ping";
+						clients[i]->GetSocket().send(packet);
+					}
+					else {
+						std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
 					}
 				}
-
-
-				if (matchingClient)
+				else
 				{
-					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
-					newSocket->setBlocking(false);
-					clientSelector.remove(matchingClient->GetSocket());
-					matchingClient->SetSocket(std::move(newSocket));
+					std::cerr << "Failed to resolve IP: " << ipStr << std::endl;
+				}
+			}
 
 
-					if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
-						std::cerr << "Warning: socket mismatch after SetSocket!" << std::endl;
+			while (runningClients) {
+				sf::TcpSocket tempSocket;
+
+				if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
+					std::string clientIp = tempSocket.getRemoteAddress()->toString();
+
+					std::shared_ptr<Client> matchingClient = nullptr;
+
+					for (std::shared_ptr<Client> client : clients)
+					{
+						if (client->GetIp() == clientIp) {
+							matchingClient = client;
+							break;
+						}
 					}
 
-					clientSelector.add(matchingClient->GetSocket());
-					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
-				}
-				else {
-					std::cerr << "Client not found in the list: " << clientIp << std::endl;
-				}
-			}
 
-			if (clientSelector.wait())
-			{
-				std::cout << "Selector ready, checking clients..." << std::endl;
-				UpdateClients(clientSelector);
+					if (matchingClient)
+					{
+						std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
+						newSocket->setBlocking(false);
+						clientSelector.remove(matchingClient->GetSocket());
+						matchingClient->SetSocket(std::move(newSocket));
 
-			}
-			else {
-				std::cout << "Selector timed out with no activity." << std::endl;
+
+						if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
+							std::cerr << "Warning: socket mismatch after SetSocket!" << std::endl;
+						}
+
+						clientSelector.add(matchingClient->GetSocket());
+						std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
+					}
+					else {
+						std::cerr << "Client not found in the list: " << clientIp << std::endl;
+					}
+
+					if (clientSelector.wait())
+					{
+						std::cout << "Selector ready, checking clients..." << std::endl;
+						UpdateClients(clientSelector);
+
+					}
+					else {
+						std::cout << "Selector timed out with no activity." << std::endl;
+					}
+				}
 			}
 		}
-		});
+		catch (const std::exception& e) {
+			std::cerr << "Excepción en el hilo: " << e.what() << std::endl;
+		}
+		catch (...) {
+			std::cerr << "Excepción desconocida en el hilo" << std::endl;
+		}
+		
+	});
 
 	clientThread.detach();
 }
@@ -187,7 +197,7 @@ void NetworkManager::DisconnectServer()
 
 void NetworkManager::DisconnectClient()
 {
-	runningClients = false;
+	//runningClients = false;
 
 	for (int i = 0; i < GAME.GetClients().size(); i++)
 		GAME.GetClients()[i]->GetSocket().disconnect();

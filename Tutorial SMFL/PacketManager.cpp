@@ -133,7 +133,7 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(START_GAME, [this](std::string guid, CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
-		int numPlayers = 4;
+		int numPlayers = 2;
 		std::string ip, name;
 		int index, numPort, myIndex = -1;
 
@@ -187,8 +187,9 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
 		
 		std::string responseMessage;
-
+		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
+		std::cout << responseMessage;
 		GAME.EndTurn();
 		});
 
@@ -200,7 +201,7 @@ void PacketManager::Init()
 void PacketManager::ProcessPacket(std::string guid, CustomPacket& customPacket)
 {
 	customPacket.packet >> customPacket.type;
-
+	std::cout << customPacket.type << std::endl;
 	EVENT_MANAGER.Emit(customPacket.type, guid, customPacket);
 }
 
