@@ -47,15 +47,15 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 
 void GameManager::StartTurn()
 {
-	currentClient->SetCanThrowDice(true);
-	currentClient->ResetDiceValue();
+	currentClient->GetPlayerData().SetCanThrowDice(true);
+	currentClient->GetPlayerData().ResetDiceValue();
 	TIME.StartTurn();
 }
 
 void GameManager::EndTurn()
 {
 	CustomPacket packet;
-	EVENT_MANAGER.Emit(END_TURN, " ", packet);
+	EVENT_MANAGER.Emit(END_TURN, packet);
 	currentClientIndex = (currentClientIndex + 1) % clients.size();
 	currentClient = clients[currentClientIndex];
 	StartTurn();
@@ -72,7 +72,7 @@ const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
 {
 	for (const std::shared_ptr<Client>& client : clients)
 	{
-		for (const std::shared_ptr<Token>& token : client->GetTokens())
+		for (const std::shared_ptr<Token>& token : client->GetPlayerData().GetTokens())
 		{
 			if (token->GetCurrentCell() == tokenChecked->GetCurrentCell() && token.get() != tokenChecked)
 				return token;
@@ -95,7 +95,10 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	else
 		color = sf::Color::Yellow;
 
-	std::shared_ptr<Client> newClient = std::make_shared<Client>(ip, name, color, index, numPort);
+	NetworkClient networkClient(ip, numPort);
+	PlayerData playerData(name, color, index);
+
+	std::shared_ptr<Client> newClient = std::make_shared<Client>(networkClient, playerData);
 	clients.push_back(newClient);
 }
 
@@ -105,12 +108,12 @@ void GameManager::RecognizeClient(int index)
 
 	for (int i = 0; i < clients.size(); i++)
 	{
-		if (clients[i]->GetIndex() == index)
+		if (clients[i]->GetPlayerData().GetIndex() == index)
 			referenceClient = clients[i];
 	}
 
 	std::cout <<"NUM DE CLIENTES: " << clients.size() << std::endl;
 
 	for (int i = 0; i < clients.size(); i++)
-		map->SetName(i, clients[i]->GetName());
+		map->SetName(i, clients[i]->GetPlayerData().GetUsername());
 }

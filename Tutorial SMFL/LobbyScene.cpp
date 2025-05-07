@@ -51,7 +51,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(CREATE_ROOM);
 				customPacket.packet << idInformation[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(CREATE_ROOM, " ", customPacket);
+				EVENT_MANAGER.Emit(CREATE_ROOM, customPacket);
 				std::cout << "Create room Send" << std::endl;
 			}
 			else if (i == 1)
@@ -59,7 +59,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(JOIN_ROOM);
 				customPacket.packet << idInformation[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(JOIN_ROOM, " ", customPacket);
+				EVENT_MANAGER.Emit(JOIN_ROOM, customPacket);
 				std::cout << "Join room Send" << std::endl;
 			}
 		}

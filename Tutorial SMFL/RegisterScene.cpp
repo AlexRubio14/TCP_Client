@@ -150,7 +150,7 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(REGISTER);
 				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(REGISTER, " ", customPacket);
+				EVENT_MANAGER.Emit(REGISTER, customPacket);
 				std::cout << "Register Send" << std::endl;
 			}
 			else if (i == 1) 
@@ -158,7 +158,7 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(LOGIN);
 				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(LOGIN, " ", customPacket);
+				EVENT_MANAGER.Emit(LOGIN, customPacket);
 				std::cout << "Login Send" << std::endl;
 			}
 		}

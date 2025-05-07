@@ -6,14 +6,14 @@ void EventManager::Subscribe(const PacketType type, Callback _callback)
     subscribers[type].push_back(_callback);
 }
 
-void EventManager::Emit(const PacketType type, std::string _guid, CustomPacket customPacket)
+void EventManager::Emit(const PacketType type, CustomPacket customPacket)
 {
 
     std::unordered_map<PacketType, std::vector<Callback>>::iterator it = subscribers.find(type);
 
     if (it != subscribers.end()) {
         for (Callback& callback : it->second) {
-            callback(_guid, customPacket);
+            callback(customPacket);
         }
     }
     else
