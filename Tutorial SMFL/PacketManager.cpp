@@ -131,7 +131,7 @@ void PacketManager::Init()
 		CustomPacket responsePacket(ENTER_ROOM);
 		std::string responseMessageEnterRoom = std::to_string(NETWORK.GetListeningPort());
 
-		responsePacket.packet >> responseMessageEnterRoom;
+		responsePacket.packet << responseMessageEnterRoom;
 		std::cout << "Packet send to client with the port im listening: " << responseMessageEnterRoom << std::endl;
 		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
