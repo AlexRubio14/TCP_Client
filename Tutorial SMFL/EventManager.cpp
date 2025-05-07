@@ -17,9 +17,7 @@ void EventManager::Emit(const PacketType type, CustomPacket customPacket)
         }
     }
     else
-    {
         std::cerr << "The event: " << type << " does not exists" << std::endl;
-    }
 }
 
 EventManager& EventManager::Instance()

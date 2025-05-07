@@ -139,7 +139,6 @@
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="CustomPacket.cpp" />
     <ClCompile Include="EventManager.cpp" />
-    <ClCompile Include="EventQueue.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="LobbyScene.cpp" />
@@ -162,7 +161,6 @@
     <ClInclude Include="ClientState.h" />
     <ClInclude Include="CustomPacket.h" />
     <ClInclude Include="EventManager.h" />
-    <ClInclude Include="EventQueue.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="LobbyScene.h" />
