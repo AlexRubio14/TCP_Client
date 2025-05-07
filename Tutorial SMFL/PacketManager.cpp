@@ -97,7 +97,7 @@ void PacketManager::Init()
 		SCENE.ChangeScene(new GameScene());
 
 		CustomPacket responsePacket(ENTER_ROOM);
-		std::string responseMessage = std::to_string(NETWORK.GetListeningPort());
+		std::string responseMessage = std::to_string(GAME.GetReferenceClient()->GetNetwork().GetPort());
 
 		responsePacket.packet >> responseMessage;
 		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
@@ -128,7 +128,7 @@ void PacketManager::Init()
 		SCENE.ChangeScene(new GameScene());
 
 		CustomPacket responsePacket(ENTER_ROOM);
-		std::string responseMessage = std::to_string(NETWORK.GetListeningPort());
+		std::string responseMessage = std::to_string(GAME.GetReferenceClient()->GetNetwork().GetPort());
 
 		responsePacket.packet >> responseMessage;
 		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
