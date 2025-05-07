@@ -177,7 +177,7 @@ bool NetworkManager::ConnectToServer()
 
 	if (serverSocket->connect(SERVER_IP, SERVER_PORT) == sf::Socket::Status::Done)
 	{
-		std::cout << "AAAAAAAAAAAAAAAAAA";
+		std::cout << "Server Connected" << std::endl;;
 	}
 
 	sf::Socket::Status status = serverSocket->connect(serverIp, serverPort);
