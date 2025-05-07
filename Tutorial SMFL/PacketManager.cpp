@@ -89,17 +89,18 @@ void PacketManager::Init()
 		});
 
 	EVENT_MANAGER.Subscribe(CREATE_ROOM_SUCCES, [this](CustomPacket& customPacket) {
-		std::string responseMessage;
+		std::string responseMessageCreateRoomSucces;
 
-		customPacket.packet >> responseMessage;
+		customPacket.packet >> responseMessageCreateRoomSucces;
 
-		std::cout << "Create room succes: " << responseMessage << std::endl;
+		std::cout << "Create room succes: " << responseMessageCreateRoomSucces << std::endl;
 		SCENE.ChangeScene(new GameScene());
 
 		CustomPacket responsePacket(ENTER_ROOM);
-		std::string responseMessage = std::to_string(GAME.GetReferenceClient()->GetNetwork().GetPort());
+		std::string responseMessageEnterRoom = std::to_string(NETWORK.GetListeningPort());
 
-		responsePacket.packet >> responseMessage;
+		std::cout << "Send packet to client with the port im listening: " << responseMessageEnterRoom << std::endl;
+		responsePacket.packet << responseMessageEnterRoom;
 		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
@@ -119,18 +120,19 @@ void PacketManager::Init()
 		});
 
 	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](CustomPacket& customPacket) {
-		std::string responseMessage;
+		std::string responseMessageJoinRoomSucces;
 
-		customPacket.packet >> responseMessage;
+		customPacket.packet >> responseMessageJoinRoomSucces;
 
-		std::cout << "Join room succes: " << responseMessage << std::endl;
+		std::cout << "Join room succes: " << responseMessageJoinRoomSucces << std::endl;
 
 		SCENE.ChangeScene(new GameScene());
 
 		CustomPacket responsePacket(ENTER_ROOM);
-		std::string responseMessage = std::to_string(GAME.GetReferenceClient()->GetNetwork().GetPort());
+		std::string responseMessageEnterRoom = std::to_string(NETWORK.GetListeningPort());
 
-		responsePacket.packet >> responseMessage;
+		responsePacket.packet >> responseMessageEnterRoom;
+		std::cout << "Packet send to client with the port im listening: " << responseMessageEnterRoom << std::endl;
 		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
