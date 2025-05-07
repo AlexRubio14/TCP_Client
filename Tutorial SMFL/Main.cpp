@@ -13,5 +13,4 @@ void main()
 		SCENE.InitScenes(new RegisterScene());
 		SCENE.Update();
 	}
-	
 }

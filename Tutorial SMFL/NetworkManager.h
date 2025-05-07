@@ -28,6 +28,7 @@ private:
 
     NetworkState currentState;
     sf::SocketSelector socketSelector;
+    sf::TcpListener listener;
 
     std::thread networkThread;
     std::mutex connectionMutex;
@@ -58,6 +59,7 @@ public:
     void Update();
     void Stop();
 
+    void StartListening();
     void StartClientConnections(const std::vector < std::shared_ptr<Client>>& newClients, int myIndex, int port);
     bool ConnectToServer();
     void DisconnectServer();
@@ -68,7 +70,6 @@ public:
 
     std::shared_ptr<sf::TcpSocket> GetServerSocket() const { return serverSocket; }
     std::vector<std::shared_ptr<Client>>& GetClients() { return p2pClients; }
+    NetworkState GetNetworkState();
 
-    int GetListeningPort() const { return serverSocket->getLocalPort(); }
-    
 };

@@ -11,7 +11,6 @@ void GameManager::Init(sf::RenderWindow& _window)
 
 void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 {
-
 	if (currentClient == nullptr)
 		return;
 
@@ -21,9 +20,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 		EndTurn();
 	}
 
-	//if(referenceClient->GetIndex() == currentClient->GetIndex())
-	currentClient->HandleEvent(event, window);
-	HandleEvent(event, window);
+	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex())
+	{
+		currentClient->HandleEvent(event, window);
+		HandleEvent(event, window);
+	}
 
 	window.clear();
 
@@ -42,7 +43,8 @@ void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 	if (event.is<sf::Event::Closed>())
 		window.close();
 
-	//Aqui hay que hacer que se desconecte el jugador 
+	CustomPacket customPacket(DISCONNECT);
+	EVENT_MANAGER.Emit(DISCONNECT, customPacket);
 }
 
 void GameManager::StartTurn()

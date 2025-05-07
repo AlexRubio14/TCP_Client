@@ -140,6 +140,14 @@ void NetworkManager::ChangeState(NetworkState newState)
 	stateMutex.unlock();
 }
 
+void NetworkManager::StartListening()
+{
+	if (listener.listen(0) == sf::Socket::Status::Done)
+		std::cout << "Listening on port: " << listener.getLocalPort() << std::endl;
+	else
+		std::cerr << "Failed to start Listening" << std::endl;
+}
+
 void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Client>>& newClients, int myIndex, int port)
 {
 	p2pClients = newClients;
@@ -187,6 +195,9 @@ bool NetworkManager::ConnectToServer()
 		serverSocket->setBlocking(false);
 		ChangeState(NetworkState::CONNECTED_TO_SERVER);
 		std::cout << "Connected To server" << std::endl;
+
+		StartListening();
+
 		return true;
 	}
 	else if (status == sf::Socket::Status::NotReady)
@@ -243,4 +254,14 @@ void NetworkManager::RefreshSelector()
 			socketSelector.add(client->GetNetwork().GetSocket());
 	}
 	selectorMutex.unlock();
+}
+
+NetworkState NetworkManager::GetNetworkState()
+{
+	NetworkState state;
+	stateMutex.lock();
+	state = currentState;
+	stateMutex.unlock();
+
+	return state;;
 }

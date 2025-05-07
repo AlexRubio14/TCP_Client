@@ -95,6 +95,12 @@ void PacketManager::Init()
 
 		std::cout << "Create room succes: " << responseMessage << std::endl;
 		SCENE.ChangeScene(new GameScene());
+
+		CustomPacket responsePacket(ENTER_ROOM);
+		std::string responseMessage = std::to_string(NETWORK.GetListeningPort());
+
+		responsePacket.packet >> responseMessage;
+		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
 	EVENT_MANAGER.Subscribe(CREATE_ROOM_ERROR, [this](CustomPacket& customPacket) {
@@ -120,6 +126,12 @@ void PacketManager::Init()
 		std::cout << "Join room succes: " << responseMessage << std::endl;
 
 		SCENE.ChangeScene(new GameScene());
+
+		CustomPacket responsePacket(ENTER_ROOM);
+		std::string responseMessage = std::to_string(NETWORK.GetListeningPort());
+
+		responsePacket.packet >> responseMessage;
+		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
 	EVENT_MANAGER.Subscribe(JOIN_ROOM_ERROR, [this](CustomPacket& customPacket) {
@@ -130,26 +142,28 @@ void PacketManager::Init()
 		std::cout << "Join Room error: " << responseMessage << std::endl;
 		});
 
+	EVENT_MANAGER.Subscribe(ENTER_ROOM, [this](CustomPacket& customPacket) {
+		SendPacketToServer(customPacket);
+		});
+
 	EVENT_MANAGER.Subscribe(START_GAME, [this](CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
 		int numPlayers = 2;
 
 		std::string ip, name;
-		int index, numPort, myIndex = -1;
+		int index, myIndex, numPort = -1;
 
 		GAME.Init(SCENE.GetWindow());
 
 		for (int i = 0; i < numPlayers; ++i)
 		{
-			customPacket.packet >> ip >> name >> index; 
+			customPacket.packet >> ip >> name >> index >> numPort; 
 
-			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << std::endl;
+			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
 
 			if (ip == sf::IpAddress::getLocalAddress()->toString())
 				myIndex = index;
-
-			numPort = NETWORK.GetListeningPort() + index;
 
 			GAME.AddClient(ip, name, index, numPort);
 
@@ -163,7 +177,7 @@ void PacketManager::Init()
 		}
 
 		GAME.RecognizeClient(myIndex);
-		EVENT_MANAGER.Emit(DISCONNECT, customPacket);
+		EVENT_MANAGER.Emit(DISCONNECT, customPacket); // Request the server to delete my data
 		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetPlayerData().GetIndex(), GAME.GetReferenceClient()->GetNetwork().GetPort());
 		NETWORK.DisconnectServer();
 		GAME.StartGame();
@@ -196,6 +210,27 @@ void PacketManager::Init()
 
 	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {
 		std::cout << "Server disconnect" << std::endl;
+
+		NetworkState networkState = NETWORK.GetNetworkState();
+		std::string responseMessage;
+
+		if (networkState == NetworkState::CONNECTED_TO_SERVER)
+		{
+			responseMessage = "The client has closed the game";
+			customPacket.packet >> responseMessage;
+			SendPacketToServer(customPacket);
+		}
+		else if (networkState == NetworkState::CONNECTED_TO_PEERS)
+		{
+			CustomPacket responsePacket(PEER_DISCONNECTED);
+			responseMessage = GAME.GetReferenceClient()->GetPlayerData().GetIndex();
+			responsePacket.packet >> responseMessage;
+
+			for (std::shared_ptr<Client> client : NETWORK.GetClients())
+			{
+				SendPacketToClient(client, responsePacket);
+			}
+		}
 		});
 }
 
@@ -208,7 +243,6 @@ void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
 
 void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
 {
-	std::cout << responsePacket.type << std::endl;
 	if (client->GetNetwork().GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
 		std::cout << "Message sent to client: "<<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
 	else
