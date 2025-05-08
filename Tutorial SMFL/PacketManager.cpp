@@ -25,7 +25,10 @@ void PacketManager::SendHandshakeP2P(const std::shared_ptr<Client>& client)
 {
 	CustomPacket customPacket(HANDSHAKE_P2P);
 	std::string responseMessage = "Hello, im the new client";
-	customPacket.packet << client->GetNetwork().GetGuid() << client->GetNetwork().GetPort() << responseMessage;
+
+	std::string myGuid = GAME.GetReferenceClient()->GetNetwork().GetGuid();
+	int myPort = NETWORK.GetListeningPort();
+	customPacket.packet << myGuid << myPort << responseMessage;
 
 	SendPacketToClient(client, customPacket);
 }
@@ -213,7 +216,7 @@ void PacketManager::Init()
 		});
 
 	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](CustomPacket& customPacket) {
-		
+		std::cout << "Packet Received from other client" << std::endl;
 		std::string responseMessage;
 		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
@@ -252,6 +255,8 @@ void PacketManager::Init()
 		std::string message;
 		customPacket.packet >> guid >> port >> message;
 
+		if (guid == GAME.GetReferenceClient()->GetNetwork().GetGuid())
+			return;
 
 		std::shared_ptr<Client> client = NETWORK.GetClientByGuid(guid);
 
@@ -263,6 +268,7 @@ void PacketManager::Init()
 
 		std::cout << "Received handshake from " << client->GetPlayerData().GetUsername()<< "and port: " <<  port << " : " << message << std::endl;
 
+		
 		client->GetNetwork().SetPort(port);
 		std::cout << "Updated client port: " << port << std::endl;
 

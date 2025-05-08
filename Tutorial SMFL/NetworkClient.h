@@ -22,7 +22,7 @@ public:
 	int GetPort() const { return port; }
 	std::string GetGuid() const { return guid; }
 	sf::TcpSocket& GetSocket() { return *socket; }
-	void SetSocket(const std::shared_ptr<sf::TcpSocket> newSocket) { socket = newSocket; }
+	void SetSocket(const std::shared_ptr<sf::TcpSocket> newSocket) { socket = std::move(newSocket); }
 	void SetPort(const int portValue) { port = portValue; }
 };
 

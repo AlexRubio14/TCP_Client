@@ -41,10 +41,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 {
 	if (event.is<sf::Event::Closed>())
+	{
 		window.close();
-
-	CustomPacket customPacket(DISCONNECT);
-	EVENT_MANAGER.Emit(DISCONNECT, customPacket);
+		CustomPacket customPacket(DISCONNECT);
+		EVENT_MANAGER.Emit(DISCONNECT, customPacket);
+	}
 }
 
 void GameManager::StartTurn()

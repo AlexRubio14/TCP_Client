@@ -256,7 +256,7 @@ void NetworkManager::DisconnectServer()
 	if (serverSocket)
 	{
 		serverSocket->disconnect();
-		serverSocket.reset();
+		socketSelector.remove(*serverSocket);
 	}
 
 	ChangeState(NetworkState::DISCONNECTED);
@@ -266,7 +266,13 @@ void NetworkManager::DisconnectServer()
 void NetworkManager::DisconnectAllPeers()
 {
 	for (std::shared_ptr<Client> client : p2pClients)
-		client->GetNetwork().GetSocket().disconnect();
+	{
+		if (client)
+		{
+			client->GetNetwork().GetSocket().disconnect();
+			socketSelector.remove(client->GetNetwork().GetSocket());
+		}
+	}
 
 	p2pClients.clear();
 
@@ -276,33 +282,44 @@ void NetworkManager::DisconnectAllPeers()
 
 void NetworkManager::HandleNewConnections()
 {
-	// Aceptar nuevas conexiones entrantes
 	std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>();
 	if (listener.accept(*newSocket) == sf::Socket::Status::Done)
 	{
 		std::optional<sf::IpAddress> remoteIp = newSocket->getRemoteAddress();
 		unsigned short remotePort = newSocket->getRemotePort();
 
-		std::cout << "New connection from: " << *remoteIp << ":" << remotePort << std::endl;
+		if (!remoteIp)
+		{
+			std::cerr << "Failed top get remote IP adress" << std::endl;
+
+		}
+		std::cout << "Incoming connection from: " << *remoteIp << ":" << remotePort << std::endl;
 
 		bool linked = false;
-		for (auto& client : p2pClients)
-		{
-			if (client == nullptr) continue;
 
-			const std::string& expectedIp = client->GetNetwork().GetIp();
-			unsigned short expectedPort = client->GetNetwork().GetPort();
+		for (std::shared_ptr<Client>& client : p2pClients)
+		{
+			std::string expectedIp = client->GetNetwork().GetIp();
+			int expectedPort = client->GetNetwork().GetPort();
 
 			if (remoteIp->toString() == expectedIp && remotePort == expectedPort)
 			{
 				std::cout << " Link connection with existing client: " << expectedIp << ":" << expectedPort << std::endl;
 
-				client->GetNetwork().SetSocket(newSocket);
+				sf::TcpSocket& oldSocket = client->GetNetwork().GetSocket();
+
+				{
+					std::lock_guard<std::mutex> selectorLock(selectorMutex);
+					socketSelector.remove(oldSocket); // Quita socket viejo
+				}
+				oldSocket.disconnect(); // Cierra el viejo
+
+				client->GetNetwork().SetSocket(newSocket); // Asigna el nuevo
 				newSocket->setBlocking(false);
 
 				{
-					std::lock_guard<std::mutex> lock(selectorMutex);
-					socketSelector.add(*newSocket);
+					std::lock_guard<std::mutex> selectorLock(selectorMutex);
+					socketSelector.add(*newSocket); // Añade el nuevo
 				}
 
 				linked = true;
@@ -312,7 +329,7 @@ void NetworkManager::HandleNewConnections()
 
 		if (!linked)
 		{
-			std::cerr << " Can't link new connection with existing client " << std::endl;
+			std::cerr << " Unrecognized connection attempt from: " << *remoteIp << ":" << remotePort << std::endl;
 			newSocket->disconnect();
 		}
 	}
@@ -322,15 +339,14 @@ void NetworkManager::UpdateP2PClients()
 {
 	for (std::shared_ptr<Client>& client : p2pClients)
 	{
-		if (!client) 
+		if (!client)
 			continue;
 
 		sf::TcpSocket& socket = client->GetNetwork().GetSocket();
-
-		if (socket.getRemoteAddress() == sf::IpAddress::Any)
+		if (!NETWORK.GetSocketSelector().isReady(socket)) 
 			continue;
 
-		if (!socketSelector.isReady(socket))
+		if (socket.getRemoteAddress() == sf::IpAddress::Any)
 			continue;
 
 		CustomPacket customPacket;
@@ -344,8 +360,7 @@ void NetworkManager::UpdateP2PClients()
 
 		case sf::Socket::Status::Disconnected:
 		{
-			std::cerr << "[P2P] Client disconnected: "
-				<< *socket.getRemoteAddress() << ":" << socket.getRemotePort() << std::endl;
+			std::cerr << "[P2P] Client disconnected: "<< *socket.getRemoteAddress() << ":" << socket.getRemotePort() << std::endl;
 
 			std::lock_guard<std::mutex> lock(selectorMutex);
 			socketSelector.remove(socket);
