@@ -14,11 +14,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
-	if (TIME.IsTurnTimeOver())
+	/*if (TIME.IsTurnTimeOver())
 	{
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
-	}
+	}*/
 
 	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex())
 	{
@@ -41,10 +41,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 void GameManager::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 {
 	if (event.is<sf::Event::Closed>())
+	{
 		window.close();
-
-	CustomPacket customPacket(DISCONNECT);
-	EVENT_MANAGER.Emit(DISCONNECT, customPacket);
+		CustomPacket customPacket(DISCONNECT);
+		EVENT_MANAGER.Emit(DISCONNECT, customPacket);
+	}
 }
 
 void GameManager::StartTurn()
@@ -84,7 +85,7 @@ const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
 	return nullptr;
 }
 
-void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index, const int& numPort)
+void GameManager::AddClient(const std::string &ip, const std::string &name, const int &index, const int& numPort, const std::string& guid)
 {
 	sf::Color color;
 	std::cout << clients.size() << std::endl;
@@ -97,11 +98,13 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 	else
 		color = sf::Color::Yellow;
 
-	NetworkClient networkClient(ip, numPort);
+	NetworkClient networkClient(ip, numPort, guid);
 	PlayerData playerData(name, color, index);
 
 	std::shared_ptr<Client> newClient = std::make_shared<Client>(networkClient, playerData);
 	clients.push_back(newClient);
+
+	std::cout << "Adding client: IP = " << ip << ", Port = " << numPort << std::endl;
 }
 
 void GameManager::RecognizeClient(int index)

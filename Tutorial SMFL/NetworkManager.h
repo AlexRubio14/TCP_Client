@@ -65,6 +65,9 @@ public:
     void DisconnectServer();
     void DisconnectAllPeers();
 
+    void HandleNewConnections();
+    void UpdateP2PClients();
+
     void ChangeState(NetworkState newState);
     void RefreshSelector();
 
@@ -72,6 +75,12 @@ public:
     std::vector<std::shared_ptr<Client>>& GetClients() { return p2pClients; }
     int GetListeningPort() const { return listener.getLocalPort(); }
     NetworkState GetNetworkState();
+    sf::TcpListener& GetListener() { return listener; }
+    std::shared_ptr<Client> GetClientByGuid(const std::string& guid);
+    std::mutex& GetSelectorMutex() { return selectorMutex; }
+    sf::SocketSelector& GetSocketSelector() { return socketSelector; }
+
+    std::shared_ptr<Client> GetClientByIp(const sf::IpAddress& ip);
 
 
 };

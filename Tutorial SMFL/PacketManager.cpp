@@ -1,4 +1,4 @@
-#include "PacketManager.h"
+﻿#include "PacketManager.h"
 #include <iostream>
 #include "EventManager.h"
 #include "NetworkManager.h"
@@ -19,6 +19,18 @@ void PacketManager::HandleTest(sf::Packet& packet)
 	packet >> message;
 
 	std::cout << "Message received from server: " << message << std::endl;
+}
+
+void PacketManager::SendHandshakeP2P(const std::shared_ptr<Client>& client)
+{
+	CustomPacket customPacket(HANDSHAKE_P2P);
+	std::string responseMessage = "Hello, im the new client";
+
+	std::string myGuid = GAME.GetReferenceClient()->GetNetwork().GetGuid();
+	int myPort = NETWORK.GetListeningPort();
+	customPacket.packet << myGuid << myPort << responseMessage;
+
+	SendPacketToClient(client, customPacket);
 }
 
 void PacketManager::SendHandshake(const std::string guid)
@@ -153,7 +165,7 @@ void PacketManager::Init()
 
 		int numPlayers = 2;
 
-		std::string ip, name;
+		std::string ip, name, guid;
 		int index, myIndex, numPort = -1;
 
 		GAME.Init(SCENE.GetWindow());
@@ -165,11 +177,11 @@ void PacketManager::Init()
 
 		for (int i = 0; i < numPlayers; ++i)
 		{
-			customPacket.packet >> ip >> name >> index >> numPort; 
+			customPacket.packet >> ip >> name >> index >> numPort >> guid; 
 
-			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
+			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << " | Guid " << guid << std::endl;
 
-			GAME.AddClient(ip, name, index, numPort);
+			GAME.AddClient(ip, name, index, numPort, guid);
 
 			std::cout << "Client added: IP = " << ip << ", Port = " << numPort << std::endl;
 		}
@@ -204,7 +216,7 @@ void PacketManager::Init()
 		});
 
 	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](CustomPacket& customPacket) {
-		
+		std::cout << "Packet Received from other client" << std::endl;
 		std::string responseMessage;
 		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
@@ -235,6 +247,32 @@ void PacketManager::Init()
 			}
 		}
 		});
+
+	EVENT_MANAGER.Subscribe(HANDSHAKE_P2P, [this](CustomPacket& customPacket) {
+
+		std::string guid;
+		int port;
+		std::string message;
+		customPacket.packet >> guid >> port >> message;
+
+		if (guid == GAME.GetReferenceClient()->GetNetwork().GetGuid())
+			return;
+
+		std::shared_ptr<Client> client = NETWORK.GetClientByGuid(guid);
+
+		if (client == nullptr)
+		{
+			std::cerr << "HandshakeP2P: Unknown client guid " << guid << port << std::endl;
+			return;
+		}
+
+		std::cout << "Received handshake from " << client->GetPlayerData().GetUsername()<< "and port: " <<  port << " : " << message << std::endl;
+
+		
+		client->GetNetwork().SetPort(port);
+		std::cout << "Updated client port: " << port << std::endl;
+
+		});
 }
 
 void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
@@ -246,10 +284,14 @@ void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
 
 void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
 {
-	if (client->GetNetwork().GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
-		std::cout << "Message sent to client: "<<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
+	sf::Socket::Status status = client->GetNetwork().GetSocket().send(responsePacket.packet);
+	if (status == sf::Socket::Status::Done)
+		std::cout << "Message sent to client: " <<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
 	else
-		std::cerr << "Error sending the message to client" << std::endl;
+	{
+		std::cout << "The error is: " << static_cast<int>(status) << std::endl;
+		std::cerr << "Error sending the message to client" << client->GetNetwork().GetIp() << " " << client->GetPlayerData().GetUsername() << " " << client->GetNetwork().GetPort() << std::endl;
+	}
 }
 
 void PacketManager::SendPacketToServer(CustomPacket& customPacket)

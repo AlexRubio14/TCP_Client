@@ -4,8 +4,8 @@
 #include "EventManager.h"
 #include "PacketManager.h"
 
-NetworkClient::NetworkClient(const std::string& ip, int port)
-	: ip(ip), port(port), socket(std::make_shared<sf::TcpSocket>()) {}
+NetworkClient::NetworkClient(const std::string& ip, int port, const std::string& guid)
+	: ip(ip), port(port), guid(guid), socket(std::make_shared<sf::TcpSocket>()) { }
 
 void NetworkClient::HandleIncomingPackets()
 {
