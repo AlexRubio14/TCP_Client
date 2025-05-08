@@ -158,14 +158,16 @@ void PacketManager::Init()
 
 		GAME.Init(SCENE.GetWindow());
 
+		std::optional<sf::IpAddress> localIp = sf::IpAddress::getLocalAddress();
+		int localPort = NETWORK.GetListeningPort();
+
+		customPacket.packet >> myIndex;
+
 		for (int i = 0; i < numPlayers; ++i)
 		{
 			customPacket.packet >> ip >> name >> index >> numPort; 
 
 			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
-
-			if (ip == sf::IpAddress::getLocalAddress()->toString())
-				myIndex = index;
 
 			GAME.AddClient(ip, name, index, numPort);
 
@@ -180,24 +182,24 @@ void PacketManager::Init()
 
 		GAME.RecognizeClient(myIndex);
 		EVENT_MANAGER.Emit(DISCONNECT, customPacket); // Request the server to delete my data
-		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetPlayerData().GetIndex(), GAME.GetReferenceClient()->GetNetwork().GetPort());
 		NETWORK.DisconnectServer();
+		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetPlayerData().GetIndex(), GAME.GetReferenceClient()->GetNetwork().GetPort());
 		GAME.StartGame();
-		
+
 		});
 
 	EVENT_MANAGER.Subscribe(END_TURN, [this](CustomPacket& customPacket) {
 		std::cout << "End Turn" << std::endl;
 
-		for (int i = 0; i < GAME.GetClients().size(); i++)
+		for (int i = 0; i < NETWORK.GetClients().size(); i++)
 		{
-			if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == GAME.GetClients()[i]->GetPlayerData().GetIndex())
+			if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
 				continue;
 
 			CustomPacket responsePacket(END_TURN_SUCCES);
 			responsePacket.packet << "Turn ended";
 		
-			SendPacketToClient(GAME.GetClients()[i], responsePacket);
+			SendPacketToClient(NETWORK.GetClients()[i], responsePacket);
 		}
 		});
 
@@ -211,7 +213,6 @@ void PacketManager::Init()
 		});
 
 	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {
-		std::cout << "Server disconnect" << std::endl;
 
 		NetworkState networkState = NETWORK.GetNetworkState();
 		std::string responseMessage;

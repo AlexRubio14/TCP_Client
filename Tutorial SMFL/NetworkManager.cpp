@@ -7,14 +7,14 @@
 
 void NetworkManager::HandleServerCommunication()
 {
-	NetworkState state;
-
-	stateMutex.lock();
-	state = currentState;
-	stateMutex.unlock();
-
-	while (state == NetworkState::CONNECTED_TO_SERVER)
+	while (true)
 	{
+		stateMutex.lock();
+		NetworkState state = currentState;
+		stateMutex.unlock();
+
+		if (state != NetworkState::CONNECTED_TO_SERVER)
+			break;
 
 		if (socketSelector.wait(sf::seconds(0.1f)))
 		{
@@ -39,14 +39,16 @@ void NetworkManager::HandleServerCommunication()
 
 void NetworkManager::HandleP2PCommunication()
 {
-	NetworkState state;
 
-	stateMutex.lock();
-	state = currentState;
-	stateMutex.unlock();
-
-	while (state == NetworkState::CONNECTED_TO_PEERS)
+	while (true)
 	{
+		stateMutex.lock();
+		NetworkState state = currentState;
+		stateMutex.unlock();
+
+		if (state != NetworkState::CONNECTED_TO_PEERS)
+			break;
+
 		if (socketSelector.wait(sf::seconds(0.1f)))
 		{
 			for (std::shared_ptr<Client> client : p2pClients)
@@ -107,6 +109,7 @@ void NetworkManager::Update()
 
 	stateMutex.lock();
 	state = currentState;
+	std::cout << static_cast<int>(currentState) << std::endl;
 	stateMutex.unlock();
 
 	switch (state) {
@@ -114,6 +117,7 @@ void NetworkManager::Update()
 		HandleServerCommunication();
 		break;
 	case NetworkState::CONNECTED_TO_PEERS:
+		std::cout << "Update p2p" << std::endl;
 		HandleP2PCommunication();
 		break;
 	default:
@@ -135,6 +139,7 @@ void NetworkManager::Stop()
 void NetworkManager::ChangeState(NetworkState newState)
 {
 	stateMutex.lock();
+	std::cout << "state changed to :" << static_cast<int>(newState) << std::endl;
 	currentState = newState;
 	RefreshSelector();
 	stateMutex.unlock();
@@ -155,30 +160,46 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 {
 	p2pClients = newClients;
 
+	std::optional<sf::IpAddress> localIp = sf::IpAddress::getLocalAddress();
+	int localPort = NETWORK.GetListeningPort();
+
 	for (int i = 0; i < p2pClients.size(); ++i)
 	{
 		if (i == myIndex) 
 			continue;
 
-		NetworkClient newClient = p2pClients[i]->GetNetwork();
-		std::optional<sf::IpAddress> ipAdress = sf::IpAddress::resolve(newClient.GetIp());
+		std::shared_ptr<Client>& newClient = p2pClients[i];
+		NetworkClient& network = newClient->GetNetwork();
+		std::optional<sf::IpAddress> ipAdress = sf::IpAddress::resolve(network.GetIp());
+
+		std::cout << *ipAdress << std::endl;
 
 		if (!ipAdress)
 			continue;
 
-		sf::Socket::Status status = newClient.GetSocket().connect(*ipAdress, newClient.GetPort());
+		sf::Socket::Status status = network.GetSocket().connect(*ipAdress, network.GetPort());
 
 		if (status == sf::Socket::Status::Done)
 		{
-			newClient.GetSocket().setBlocking(false);
-			std::cout << "Connected to peer " << newClient.GetIp() << ":" << newClient.GetPort() << "\n";
+			network.GetSocket().setBlocking(false);
+
+			{
+				std::lock_guard<std::mutex> lock(selectorMutex);
+				socketSelector.add(network.GetSocket());
+			}
+
+			std::cout << "Connected to peer " << network.GetIp() << ":" << network.GetPort() << std::endl;
 		}
 		else
 		{
-			std::cerr << "Failed to connect to peer " << newClient.GetIp() << "\n";
+			std::cerr << "Failed to connect to peer " << network.GetIp() << std::endl;
 		}
 	}
 
+	std::cout << "Received: IP = " << p2pClients[0]->GetNetwork().GetIp() << " | Name = " << p2pClients[0]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[0]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[0]->GetNetwork().GetPort() << std::endl;
+	std::cout << "Received: IP = " << p2pClients[1]->GetNetwork().GetIp() << " | Name = " << p2pClients[1]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[1]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[1]->GetNetwork().GetPort() << std::endl;
+
+	GAME.StartGame();
 	ChangeState(NetworkState::CONNECTED_TO_PEERS);
 }
 

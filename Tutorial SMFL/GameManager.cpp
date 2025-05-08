@@ -106,13 +106,7 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 
 void GameManager::RecognizeClient(int index)
 {
-	std::vector<std::shared_ptr<Client>> otherClients;
-
-	for (int i = 0; i < clients.size(); i++)
-	{
-		if (clients[i]->GetPlayerData().GetIndex() == index)
-			referenceClient = clients[i];
-	}
+	referenceClient = clients[index];
 
 	std::cout <<"NUM DE CLIENTES: " << clients.size() << std::endl;
 
