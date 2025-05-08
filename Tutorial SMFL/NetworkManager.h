@@ -75,6 +75,7 @@ public:
     std::vector<std::shared_ptr<Client>>& GetClients() { return p2pClients; }
     int GetListeningPort() const { return listener.getLocalPort(); }
     NetworkState GetNetworkState();
+    std::shared_ptr<Client> GetClientByGuid(const std::string& guid);
 
 
 };

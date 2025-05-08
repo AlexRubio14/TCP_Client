@@ -247,10 +247,21 @@ void PacketManager::Init()
 
 	EVENT_MANAGER.Subscribe(HANDSHAKE_P2P, [this](CustomPacket& customPacket) {
 
-		CustomPacket handshakePacket(HANDSHAKE_P2P);
-		handshakePacket.packet << ;
-		peerSocket.send(handshakePacket.packet);
-		})
+		std::string guid;
+		std::string message;
+		customPacket.packet >> guid >> message;
+
+
+		std::shared_ptr<Client> sender = NETWORK.GetClientByGuid(guid);
+
+		if (!sender)
+		{
+			std::cerr << "HandshakeP2P: Unknown client guid " << guid << std::endl;
+			return;
+		}
+
+		std::cout << "Received handshake from " << sender->GetPlayerData().GetUsername()<< ": " << message << std::endl;
+		});
 }
 
 void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)

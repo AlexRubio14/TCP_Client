@@ -357,3 +357,19 @@ NetworkState NetworkManager::GetNetworkState()
 
 	return state;;
 }
+
+std::shared_ptr<Client> NetworkManager::GetClientByGuid(const std::string& guid)
+{
+	const auto clientIt = std::find_if(p2pClients.begin(), p2pClients.end(),
+		[guid](const std::shared_ptr<Client>& client) {
+			std::cerr << "Client with GUID " << guid << " found in pending clients Vector" << std::endl;
+
+			return client->GetNetwork().GetGuid() == guid;
+		});
+
+	if (clientIt != p2pClients.end())
+		return *clientIt;
+
+	std::cerr << "Client with GUID " << guid << " not found in pending clients Vector" << std::endl;
+	return nullptr;
+}
