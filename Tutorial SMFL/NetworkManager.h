@@ -1,71 +1,77 @@
 #pragma once
 #include <SFML/Network.hpp>
-#include <iostream>
 #include <string>
+#include <iostream>
 #include "Client.h"
 
 #include "CustomPacket.h"
 #include <thread>
 #include <mutex>
-
-enum ConnectionState {
-    Disconnected,
-    Connected
-};
+#include "NetworkState.h"
 
 #define NETWORK NetworkManager::Instance()
 
-#define SERVER_PORT 55000
-const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
-//const sf::IpAddress SERVER_IP = sf::IpAddress(127,0,0,1);
+const int SERVER_PORT = 55001;
+//const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
+const sf::IpAddress SERVER_IP = sf::IpAddress(192, 168, 1, 144);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
 
 class NetworkManager
 {
 private:
-    NetworkManager();
 
-    NetworkManager(const NetworkManager&) = delete;
-    NetworkManager& operator =(const NetworkManager&) = delete;
+    std::shared_ptr<sf::TcpSocket> serverSocket;
+    std::vector<std::shared_ptr<Client>> p2pClients;
 
-    sf::TcpSocket socketServer;
-    CustomPacket customPacket;
+    sf::IpAddress serverIp = SERVER_IP;
+    int serverPort;
 
-    sf::TcpListener listener;
+    NetworkState currentState;
     sf::SocketSelector socketSelector;
+    sf::TcpListener listener;
 
     std::thread networkThread;
-    std::thread clientThread;
-    std::mutex networkMutex;
+    std::mutex connectionMutex;
+    std::mutex stateMutex;
+    std::mutex selectorMutex;
 
-    ConnectionState socketState;
+    bool isRunning;
 
-    std::atomic<bool> running = false;
-    std::atomic<bool> runningClients = false;
+    NetworkManager() {};
+    NetworkManager(const NetworkManager&) = delete;
+    NetworkManager& operator=(const NetworkManager&) = delete;
 
-    int listeningPort;
+    void HandleServerCommunication();
+    void HandleP2PCommunication();
 
 public:
+
     inline static NetworkManager& Instance()
     {
         static NetworkManager manager;
         return manager;
     }
 
-    bool ConnectServer();
-    void ConnectClients(std::vector<std::shared_ptr<Client>> clients);
-    void StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int myPort);
-    void StartListeningForClients(const int numPort);
-    void DisconnectServer();
-    void DisconnectClient();
+    ~NetworkManager();
 
+    void Init();
+    void Start();
     void Update();
-    void UpdateClients(sf::SocketSelector& clientSelector);
-    void RecivePacket();
-    void RecivePacketClient(std::shared_ptr<Client> client);
-    bool IsConnected() const;
+    void Stop();
 
-    inline sf::TcpSocket& GetSocketServer() { return socketServer; }
-    inline sf::SocketSelector& GetSocketSelector() { return socketSelector; }
-    inline sf::TcpListener& GetListener() { return listener; }
-    inline int GetListeningPort() const { return listeningPort; }
+    void StartListening();
+    void StartClientConnections(const std::vector < std::shared_ptr<Client>>& newClients, int myIndex, int port);
+    bool ConnectToServer();
+    void DisconnectServer();
+    void DisconnectAllPeers();
+
+    void ChangeState(NetworkState newState);
+    void RefreshSelector();
+
+    std::shared_ptr<sf::TcpSocket> GetServerSocket() const { return serverSocket; }
+    std::vector<std::shared_ptr<Client>>& GetClients() { return p2pClients; }
+    int GetListeningPort() const { return listener.getLocalPort(); }
+    NetworkState GetNetworkState();
+
+
 };

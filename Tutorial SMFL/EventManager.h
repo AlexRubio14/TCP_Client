@@ -1,6 +1,11 @@
 #pragma once
 #include <functional>
 #include <string>
+#include <unordered_map>
+#include <vector>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 #include "PacketType.h"
 #include "PacketManager.h"
 
@@ -9,11 +14,11 @@
 class EventManager
 {
 public:
-    using Callback = std::function<void(std::string, CustomPacket&)>;
+    using Callback = std::function<void(CustomPacket&)>;
 
     void Subscribe(const PacketType type, Callback callback);
 
-    void Emit(const PacketType type, std::string guid, CustomPacket customPacket);
+    void Emit(const PacketType type, CustomPacket customPacket);
 
     static EventManager& Instance();
 

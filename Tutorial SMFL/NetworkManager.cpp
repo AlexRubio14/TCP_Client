@@ -1,252 +1,286 @@
 #include "NetworkManager.h"
 #include "PacketManager.h"
 #include "GameManager.h"
+#include <optional>
 
 
-NetworkManager::NetworkManager()
+
+void NetworkManager::HandleServerCommunication()
 {
-	listeningPort = 55001;
-}
-bool NetworkManager::ConnectServer()
-{
-	if (socketServer.connect(SERVER_IP, SERVER_PORT) == sf::Socket::Status::Done)
+	while (true)
 	{
-		std::cout << "Connected" << std::endl;
+		stateMutex.lock();
+		NetworkState state = currentState;
+		stateMutex.unlock();
 
-		socketServer.setBlocking(false);
-		socketSelector.add(socketServer);
-		running = true;
+		if (state != NetworkState::CONNECTED_TO_SERVER)
+			break;
 
-		networkThread = std::thread([this]() {
-			while (running)
-			{
-				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			}
-			});
-
-		socketState = Connected;
-
-		return true;
-	}
-	std::cerr << "Error trying connect the Server" << std::endl;
-	return false;
-}
-
-void NetworkManager::ConnectClients(std::vector<std::shared_ptr<Client>> clients) {
-	for (int i = 0; i < clients.size(); i++) {
-		std::string ipStr = clients[i]->GetIp();
-		std::optional<sf::IpAddress> resolved = sf::IpAddress::resolve(ipStr);
-
-		if (resolved) {
-			sf::IpAddress ip = *resolved;
-			std::cout << "Resolved IP: " << ip.toString() << std::endl;
-
-			sf::Socket::Status status = clients[i]->GetSocket().connect(ip, listeningPort + clients[i]->GetIndex());
-
-			if (status == sf::Socket::Status::Done) {
-				std::cout << "Connected to " << ip.toString() << std::endl;
-				clients[i]->GetSocket().setBlocking(false);
-				socketSelector.add(clients[i]->GetSocket());
-			}
-			else {
-				std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
-			}
-		}
-		else {
-			std::cerr << "Failed to resolve IP: " << ipStr << std::endl;
-		}
-	}
-}
-
-void NetworkManager::StartListeningForClients(const int numPort) {
-	if (listener.listen(numPort) == sf::Socket::Status::Done) {
-		std::cout << "Listening for incoming connections on port " << numPort << std::endl;
-	}
-	else {
-		std::cerr << "Error: Unable to start listener on port " << numPort << std::endl;
-	}
-}
-
-void NetworkManager::StartClientConnections(std::vector<std::shared_ptr<Client>> clients, const int myIndex, const int myPort) {
-	if (clients.size() <= 0)
-		return;
-
-	clientThread = std::thread([this, clients, myIndex, myPort]() {
-
-		sf::SocketSelector clientSelector;
-
-		StartListeningForClients(myPort); //Start lsitening in my port\
-
-		runningClients = true;
-
-		for (int i = 0; i < clients.size(); i++)
+		if (socketSelector.wait(sf::seconds(0.1f)))
 		{
-			if (i == myIndex)
-				continue;
-
-			std::string ipStr = clients[i]->GetIp();
-			int port = clients[i]->GetNumPort();
-
-			std::optional<sf::IpAddress> resolved = sf::IpAddress::resolve(ipStr);
-
-			if (resolved)
+			if (socketSelector.isReady(*serverSocket))
 			{
-				sf::IpAddress ip = *resolved;
-				std::cout << "conectadno a: " << ip.toString() << ":" << port << std::endl;
+				CustomPacket customPacket;
 
-				sf::Socket::Status status = clients[i]->GetSocket().connect(ip, port);
-				if (status == sf::Socket::Status::Done) {
-					std::cout << "Connected to " << ip.toString() << std::endl;
-					clients[i]->GetSocket().setBlocking(false);
-					clientSelector.add(clients[i]->GetSocket());
+				sf::Socket::Status status = serverSocket->receive(customPacket.packet);
 
-					sf::Packet packet;
-					packet << "ping";
-					clients[i]->GetSocket().send(packet);
+				if (status == sf::Socket::Status::Done)
+				{
+					PACKET_MANAGER.ProcessReceivedPacket(customPacket);
 				}
-				else {
-					std::cerr << "Failed to connect to " << ip.toString() << ", Error: " << static_cast<int>(status) << std::endl;
+				else
+				{
+					std::cerr << "Error receiving the packet: " << static_cast<int>(status) << std::endl;
 				}
-			}
-			else
-			{
-				std::cerr << "Failed to resolve IP: " << ipStr << std::endl;
 			}
 		}
+	}
+}
 
+void NetworkManager::HandleP2PCommunication()
+{
 
-		while (runningClients) {
+	while (true)
+	{
+		stateMutex.lock();
+		NetworkState state = currentState;
+		stateMutex.unlock();
 
-			sf::TcpSocket tempSocket;
+		if (state != NetworkState::CONNECTED_TO_PEERS)
+			break;
 
-			if (listener.accept(tempSocket) == sf::Socket::Status::Done) {
-				std::string clientIp = tempSocket.getRemoteAddress()->toString();
-				std::cout << "New client connected: " << clientIp << std::endl;
-
-				std::shared_ptr<Client> matchingClient = nullptr;
-
-				for (std::shared_ptr<Client> client : clients)
-				{
-					if (client->GetIp() == clientIp) {
-						matchingClient = client;
-						break;
-					}
-				}
-
-
-				if (matchingClient)
-				{
-					std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>(std::move(tempSocket));
-					newSocket->setBlocking(false);
-					clientSelector.remove(matchingClient->GetSocket());
-					matchingClient->SetSocket(std::move(newSocket));
-
-
-					if (matchingClient->GetSocket().getRemoteAddress()->toString() != clientIp) {
-						std::cerr << "Warning: socket mismatch after SetSocket!" << std::endl;
-					}
-
-					clientSelector.add(matchingClient->GetSocket());
-					std::cout << "Client connected: " << matchingClient->GetIp() << std::endl;
-				}
-				else {
-					std::cerr << "Client not found in the list: " << clientIp << std::endl;
-				}
-			}
-
-			if (clientSelector.wait())
+		if (socketSelector.wait(sf::seconds(0.1f)))
+		{
+			for (std::shared_ptr<Client> client : p2pClients)
 			{
-				std::cout << "Selector ready, checking clients..." << std::endl;
-				UpdateClients(clientSelector);
+				if (client && client->GetNetwork().GetSocket().getRemoteAddress() != sf::IpAddress::Any)
+				{
+					sf::TcpSocket& socket = client->GetNetwork().GetSocket();
 
+					if (socketSelector.isReady(socket))
+					{
+						CustomPacket customPacket;
+						sf::Socket::Status status = client->GetNetwork().GetSocket().receive(customPacket.packet);
+
+						if (status == sf::Socket::Status::Done)
+						{
+							PACKET_MANAGER.ProcessReceivedPacket(customPacket);
+						}
+						else
+						{
+							std::cerr << "Error receiving the packet: " << static_cast<int>(status) << std::endl;
+
+						}
+					}
+				}
 			}
-			else {
-				std::cout << "Selector timed out with no activity." << std::endl;
-			}
+		}
+	}
+}
+
+NetworkManager::~NetworkManager()
+{
+	Stop();
+}
+
+void NetworkManager::Init()
+{
+	serverSocket = std::make_shared<sf::TcpSocket>();
+	serverIp = SERVER_IP;
+	serverPort = SERVER_PORT;
+	currentState = NetworkState::DISCONNECTED;
+	isRunning = false;
+}
+
+void NetworkManager::Start()
+{
+	isRunning = true;
+	networkThread = std::thread([this]() {
+		while (isRunning) 
+		{
+			Update();
 		}
 		});
-
-	clientThread.detach();
-}
-
-
-void NetworkManager::DisconnectServer()
-{
-	std::lock_guard<std::mutex> lock(networkMutex);
-	if (IsConnected()) {
-		socketSelector.remove(socketServer);
-		socketServer.disconnect();
-		running = false;
-		std::cout << "Server disconnected successfully" << std::endl;
-	}
-	else {
-		std::cout << "Server is already disconnected." << std::endl;
-	}
-}
-
-void NetworkManager::DisconnectClient()
-{
-	runningClients = false;
-
-	for (int i = 0; i < GAME.GetClients().size(); i++)
-		GAME.GetClients()[i]->GetSocket().disconnect();
 }
 
 void NetworkManager::Update()
 {
-	if (socketSelector.wait())
-	{
-		if (socketSelector.isReady(socketServer))
-		{
-			RecivePacket();
-		}
+	NetworkState state;
+
+	stateMutex.lock();
+	state = currentState;
+	std::cout << static_cast<int>(currentState) << std::endl;
+	stateMutex.unlock();
+
+	switch (state) {
+	case NetworkState::CONNECTED_TO_SERVER:
+		HandleServerCommunication();
+		break;
+	case NetworkState::CONNECTED_TO_PEERS:
+		std::cout << "Update p2p" << std::endl;
+		HandleP2PCommunication();
+		break;
+	default:
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		break;
 	}
 }
 
-void NetworkManager::UpdateClients(sf::SocketSelector& clientSelector)
+void NetworkManager::Stop()
 {
-	std::cout << "Clients vector size: " << GAME.GetClients().size() << std::endl;
+	isRunning = false;
+	if (networkThread.joinable())
+		networkThread.join();
 
-	for (std::shared_ptr<Client> client : GAME.GetClients())
-	{
-		if (client && clientSelector.isReady(client->GetSocket()))
-		{
-			std::cout << "estoy recibiendo un paquete" << std::endl;
-			client->HandleIncomingPackets();
-		}
-		else if (!client)
-		{
-			std::cerr << "Invalid client pointer detected." << std::endl;
-		}
-	}
+	DisconnectServer();
+	DisconnectAllPeers();
 }
 
-void NetworkManager::RecivePacket()
+void NetworkManager::ChangeState(NetworkState newState)
 {
-	if (socketServer.receive(customPacket.packet) == sf::Socket::Status::Done)
+	stateMutex.lock();
+	std::cout << "state changed to :" << static_cast<int>(newState) << std::endl;
+	currentState = newState;
+	RefreshSelector();
+	stateMutex.unlock();
+}
+
+void NetworkManager::StartListening()
+{
+	if (listener.listen(0) == sf::Socket::Status::Done)
 	{
-		PACKET_MANAGER.ProcessPacket(" ", customPacket);
+		std::cout << "Listening on port: " << listener.getLocalPort() << std::endl;
+		std::cout << "Listening on port: " << GetListeningPort() << std::endl;
 	}
 	else
-	{
-		std::cout << "Packet not received Server" << std::endl;
-	}
+		std::cerr << "Failed to start Listening" << std::endl;
 }
 
-void NetworkManager::RecivePacketClient(std::shared_ptr<Client> client)
+void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Client>>& newClients, int myIndex, int port)
 {
-	CustomPacket customPacketClient;
-	if (client->GetSocket().receive(customPacketClient.packet) == sf::Socket::Status::Done)
+	p2pClients = newClients;
+
+	std::optional<sf::IpAddress> localIp = sf::IpAddress::getLocalAddress();
+	int localPort = NETWORK.GetListeningPort();
+
+	for (int i = 0; i < p2pClients.size(); ++i)
 	{
-		PACKET_MANAGER.ProcessPacket(" ", customPacketClient);
+		if (i == myIndex) 
+			continue;
+
+		std::shared_ptr<Client>& newClient = p2pClients[i];
+		NetworkClient& network = newClient->GetNetwork();
+		std::optional<sf::IpAddress> ipAdress = sf::IpAddress::resolve(network.GetIp());
+
+		std::cout << *ipAdress << std::endl;
+
+		if (!ipAdress)
+			continue;
+
+		sf::Socket::Status status = network.GetSocket().connect(*ipAdress, network.GetPort());
+
+		if (status == sf::Socket::Status::Done)
+		{
+			network.GetSocket().setBlocking(false);
+
+			{
+				std::lock_guard<std::mutex> lock(selectorMutex);
+				socketSelector.add(network.GetSocket());
+			}
+
+			std::cout << "Connected to peer " << network.GetIp() << ":" << network.GetPort() << std::endl;
+		}
+		else
+		{
+			std::cerr << "Failed to connect to peer " << network.GetIp() << std::endl;
+		}
 	}
-	else
-	{
-		std::cout << "Packet not received Client" << std::endl;
-	}
+
+	std::cout << "Received: IP = " << p2pClients[0]->GetNetwork().GetIp() << " | Name = " << p2pClients[0]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[0]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[0]->GetNetwork().GetPort() << std::endl;
+	std::cout << "Received: IP = " << p2pClients[1]->GetNetwork().GetIp() << " | Name = " << p2pClients[1]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[1]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[1]->GetNetwork().GetPort() << std::endl;
+
+	GAME.StartGame();
+	ChangeState(NetworkState::CONNECTED_TO_PEERS);
 }
 
-bool NetworkManager::IsConnected() const {
-	return socketState == Connected;
+bool NetworkManager::ConnectToServer()
+{
+	std::cout << serverIp << " " << serverPort << std::endl;
+
+	sf::Socket::Status status = serverSocket->connect(serverIp, serverPort);
+
+	if (status == sf::Socket::Status::Done)
+	{
+		serverSocket->setBlocking(false);
+		ChangeState(NetworkState::CONNECTED_TO_SERVER);
+		std::cout << "Connected To server" << std::endl;
+
+		StartListening();
+
+		return true;
+	}
+	else if (status == sf::Socket::Status::NotReady)
+	{
+		if (socketSelector.wait())
+		{
+			if (socketSelector.isReady(*serverSocket))
+			{
+				ChangeState(NetworkState::CONNECTED_TO_SERVER);
+				std::cout << "Connected To server" << std::endl;
+			}
+		}
+	}
+
+	std::cerr << "Can't connect to server because: " << static_cast<int>(status) << std::endl;
+	return false;
+}
+
+void NetworkManager::DisconnectServer()
+{
+	if (serverSocket)
+	{
+		serverSocket->disconnect();
+		serverSocket.reset();
+	}
+
+	ChangeState(NetworkState::DISCONNECTED);
+	std::cout << "Disconnected from server" << std::endl;
+}
+
+void NetworkManager::DisconnectAllPeers()
+{
+	for (std::shared_ptr<Client> client : p2pClients)
+		client->GetNetwork().GetSocket().disconnect();
+
+	p2pClients.clear();
+
+	ChangeState(NetworkState::DISCONNECTED);
+	std::cout << "Disconnected from all peers" << std::endl;
+}
+
+void NetworkManager::RefreshSelector()
+{
+	selectorMutex.lock();
+	socketSelector.clear();
+
+	if (currentState == NetworkState::CONNECTED_TO_SERVER)
+	{
+		socketSelector.add(*serverSocket);
+	}
+	else if (currentState == NetworkState::CONNECTED_TO_PEERS)
+	{
+		for (std::shared_ptr<Client> client : p2pClients)
+			socketSelector.add(client->GetNetwork().GetSocket());
+	}
+	selectorMutex.unlock();
+}
+
+NetworkState NetworkManager::GetNetworkState()
+{
+	NetworkState state;
+	stateMutex.lock();
+	state = currentState;
+	stateMutex.unlock();
+
+	return state;;
 }

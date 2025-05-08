@@ -11,7 +11,6 @@ void SceneManager::InitScenes(Scene* scene)
 
 	PACKET_MANAGER.Init();
 	PACKET_MANAGER.SendHandshake(" ");
-	NETWORK.GetSocketSelector().add(NETWORK.GetListener());
 }
 
 void SceneManager::ChangeScene(Scene* scene)

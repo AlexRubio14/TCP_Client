@@ -69,7 +69,7 @@ int Token::MoveToken(int moves)
 		if (token->GetColor() != color)
 		{
 			token->ReturnToOriginalCell();
-			GAME.GetCurrentClient()->SetExtraMoves(true);
+			GAME.GetCurrentClient()->GetPlayerData().SetExtraMoves(true);
 			return 20;
 		}
 		else if (token != nullptr)
@@ -83,7 +83,7 @@ int Token::MoveToken(int moves)
 	{
 		std::cout << "La ficha ha llegado al final" << std::endl;
 		newDiceValue = 10;
-		GAME.GetCurrentClient()->SetExtraMoves(true);
+		GAME.GetCurrentClient()->GetPlayerData().SetExtraMoves(true);
 	}
 
 	return newDiceValue;

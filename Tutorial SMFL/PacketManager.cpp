@@ -31,11 +31,11 @@ void PacketManager::SendHandshake(const std::string guid)
 
 void PacketManager::Init()
 {
-	EVENT_MANAGER.Subscribe(HANDSHAKE, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(HANDSHAKE, [this](CustomPacket& customPacket) {
 		HandleHandshake(customPacket.packet);
 		});
 
-	EVENT_MANAGER.Subscribe(REGISTER, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(REGISTER, [this](CustomPacket& customPacket) {
 		std::string username;
 		std::string password;
 		customPacket.packet >> username >> password;
@@ -44,7 +44,7 @@ void PacketManager::Init()
 
 		});
 
-	EVENT_MANAGER.Subscribe(REGISTER_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(REGISTER_ERROR, [this](CustomPacket& customPacket) {
 		std::string responseMessage;
 
 		customPacket.packet >> responseMessage;
@@ -52,12 +52,12 @@ void PacketManager::Init()
 		std::cout << "Register error: " << responseMessage << std::endl;
 		});
 
-	EVENT_MANAGER.Subscribe(REGISTER_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(REGISTER_SUCCES, [this](CustomPacket& customPacket) {
 		std::cout << "Register succes" << std::endl;
 		SCENE.ChangeScene(new LobbyScene());
 		});
 
-	EVENT_MANAGER.Subscribe(LOGIN, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(LOGIN, [this](CustomPacket& customPacket) {
 
 		std::string username;
 		std::string password;
@@ -66,7 +66,7 @@ void PacketManager::Init()
 		SendPacketToServer(customPacket);
 		});
 
-	EVENT_MANAGER.Subscribe(LOGIN_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(LOGIN_ERROR, [this](CustomPacket& customPacket) {
 		std::string responseMessage;
 
 		customPacket.packet >> responseMessage;
@@ -75,12 +75,12 @@ void PacketManager::Init()
 
 		});
 
-	EVENT_MANAGER.Subscribe(LOGIN_SUCCESS, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(LOGIN_SUCCESS, [this](CustomPacket& customPacket) {
 		std::cout << "Login succes" << std::endl;
 		SCENE.ChangeScene(new LobbyScene());
 		});
 
-	EVENT_MANAGER.Subscribe(CREATE_ROOM, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(CREATE_ROOM, [this](CustomPacket& customPacket) {
 		std::string id;
 		customPacket.packet >> id;
 
@@ -88,16 +88,23 @@ void PacketManager::Init()
 
 		});
 
-	EVENT_MANAGER.Subscribe(CREATE_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
-		std::string responseMessage;
+	EVENT_MANAGER.Subscribe(CREATE_ROOM_SUCCES, [this](CustomPacket& customPacket) {
+		std::string responseMessageCreateRoomSucces;
 
-		customPacket.packet >> responseMessage;
+		customPacket.packet >> responseMessageCreateRoomSucces;
 
-		std::cout << "Create room succes: " << responseMessage << std::endl;
+		std::cout << "Create room succes: " << responseMessageCreateRoomSucces << std::endl;
 		SCENE.ChangeScene(new GameScene());
+
+		CustomPacket responsePacket(ENTER_ROOM);
+		std::string responseMessageEnterRoom = std::to_string(NETWORK.GetListeningPort());
+
+		std::cout << "Send packet to client with the port im listening: " << responseMessageEnterRoom << std::endl;
+		responsePacket.packet << responseMessageEnterRoom;
+		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
-	EVENT_MANAGER.Subscribe(CREATE_ROOM_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(CREATE_ROOM_ERROR, [this](CustomPacket& customPacket) {
 		std::string responseMessage;
 
 		customPacket.packet >> responseMessage;
@@ -105,24 +112,31 @@ void PacketManager::Init()
 		std::cout << "Create Room error: " << responseMessage << std::endl;
 		});
 
-	EVENT_MANAGER.Subscribe(JOIN_ROOM, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(JOIN_ROOM, [this](CustomPacket& customPacket) {
 		std::string id;
 		customPacket.packet >> id;
 
 		SendPacketToServer(customPacket);
 		});
 
-	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
-		std::string responseMessage;
+	EVENT_MANAGER.Subscribe(JOIN_ROOM_SUCCES, [this](CustomPacket& customPacket) {
+		std::string responseMessageJoinRoomSucces;
 
-		customPacket.packet >> responseMessage;
+		customPacket.packet >> responseMessageJoinRoomSucces;
 
-		std::cout << "Join room succes: " << responseMessage << std::endl;
+		std::cout << "Join room succes: " << responseMessageJoinRoomSucces << std::endl;
 
 		SCENE.ChangeScene(new GameScene());
+
+		CustomPacket responsePacket(ENTER_ROOM);
+		std::string responseMessageEnterRoom = std::to_string(NETWORK.GetListeningPort());
+
+		responsePacket.packet << responseMessageEnterRoom;
+		std::cout << "Packet send to client with the port im listening: " << responseMessageEnterRoom << std::endl;
+		EVENT_MANAGER.Emit(ENTER_ROOM, responsePacket);
 		});
 
-	EVENT_MANAGER.Subscribe(JOIN_ROOM_ERROR, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(JOIN_ROOM_ERROR, [this](CustomPacket& customPacket) {
 		std::string responseMessage;
 
 		customPacket.packet >> responseMessage;
@@ -130,25 +144,30 @@ void PacketManager::Init()
 		std::cout << "Join Room error: " << responseMessage << std::endl;
 		});
 
-	EVENT_MANAGER.Subscribe(START_GAME, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(ENTER_ROOM, [this](CustomPacket& customPacket) {
+		SendPacketToServer(customPacket);
+		});
+
+	EVENT_MANAGER.Subscribe(START_GAME, [this](CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
-		int numPlayers = 4;
+		int numPlayers = 2;
+
 		std::string ip, name;
-		int index, numPort, myIndex = -1;
+		int index, myIndex, numPort = -1;
 
 		GAME.Init(SCENE.GetWindow());
 
+		std::optional<sf::IpAddress> localIp = sf::IpAddress::getLocalAddress();
+		int localPort = NETWORK.GetListeningPort();
+
+		customPacket.packet >> myIndex;
+
 		for (int i = 0; i < numPlayers; ++i)
 		{
-			customPacket.packet >> ip >> name >> index; 
+			customPacket.packet >> ip >> name >> index >> numPort; 
 
-			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << std::endl;
-
-			if (ip == sf::IpAddress::getLocalAddress()->toString())
-				myIndex = index;
-
-			numPort = NETWORK.GetListeningPort() + index;
+			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
 
 			GAME.AddClient(ip, name, index, numPort);
 
@@ -162,60 +181,80 @@ void PacketManager::Init()
 		}
 
 		GAME.RecognizeClient(myIndex);
-		EVENT_MANAGER.Emit(DISCONNECT, guid, customPacket);
-		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetIndex(), GAME.GetReferenceClient()->GetNumPort());
+		EVENT_MANAGER.Emit(DISCONNECT, customPacket); // Request the server to delete my data
 		NETWORK.DisconnectServer();
+		NETWORK.StartClientConnections(GAME.GetClients(), GAME.GetReferenceClient()->GetPlayerData().GetIndex(), GAME.GetReferenceClient()->GetNetwork().GetPort());
 		GAME.StartGame();
-		
+
 		});
 
-	EVENT_MANAGER.Subscribe(END_TURN, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(END_TURN, [this](CustomPacket& customPacket) {
 		std::cout << "End Turn" << std::endl;
 
-		for (int i = 0; i < GAME.GetClients().size(); i++)
+		for (int i = 0; i < NETWORK.GetClients().size(); i++)
 		{
-			if (GAME.GetReferenceClient()->GetIndex() == GAME.GetClients()[i]->GetIndex())
+			if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
 				continue;
 
 			CustomPacket responsePacket(END_TURN_SUCCES);
 			responsePacket.packet << "Turn ended";
 		
-			SendPacketToClient(GAME.GetClients()[i], responsePacket);
+			SendPacketToClient(NETWORK.GetClients()[i], responsePacket);
 		}
 		});
 
-	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](std::string guid, CustomPacket& customPacket) {
+	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](CustomPacket& customPacket) {
 		
 		std::string responseMessage;
-
+		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
+		std::cout << responseMessage;
 		GAME.EndTurn();
 		});
 
-	EVENT_MANAGER.Subscribe(DISCONNECT, [this](std::string guid, CustomPacket& customPacket) {
-		std::cout << "Server disconnect" << std::endl;
+	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {
+
+		NetworkState networkState = NETWORK.GetNetworkState();
+		std::string responseMessage;
+
+		if (networkState == NetworkState::CONNECTED_TO_SERVER)
+		{
+			responseMessage = "The client has closed the game";
+			customPacket.packet >> responseMessage;
+			SendPacketToServer(customPacket);
+		}
+		else if (networkState == NetworkState::CONNECTED_TO_PEERS)
+		{
+			CustomPacket responsePacket(PEER_DISCONNECTED);
+			responseMessage = GAME.GetReferenceClient()->GetPlayerData().GetIndex();
+			responsePacket.packet >> responseMessage;
+
+			for (std::shared_ptr<Client> client : NETWORK.GetClients())
+			{
+				SendPacketToClient(client, responsePacket);
+			}
+		}
 		});
 }
 
-void PacketManager::ProcessPacket(std::string guid, CustomPacket& customPacket)
+void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
 {
 	customPacket.packet >> customPacket.type;
-
-	EVENT_MANAGER.Emit(customPacket.type, guid, customPacket);
+	std::cout << customPacket.type << std::endl;
+	EVENT_MANAGER.Emit(customPacket.type, customPacket);
 }
 
 void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
 {
-	std::cout << responsePacket.type << std::endl;
-	if (client->GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
-		std::cout << "Message sent to client: "<<client->GetIp()<< " "<<client->GetUsername()<<" "<<client->GetNumPort() << std::endl;
+	if (client->GetNetwork().GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
+		std::cout << "Message sent to client: "<<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
 	else
 		std::cerr << "Error sending the message to client" << std::endl;
 }
 
 void PacketManager::SendPacketToServer(CustomPacket& customPacket)
 {
-	if (NETWORK.GetSocketServer().send(customPacket.packet) == sf::Socket::Status::Done)
+	if (NETWORK.GetServerSocket()->send(customPacket.packet) == sf::Socket::Status::Done)
 	{
 		std::cout << "Packet send to server" << std::endl;
 	}

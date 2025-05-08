@@ -25,7 +25,7 @@ public:
     void Init();
 
     void SendHandshake(const std::string guid);
-    void ProcessPacket(std::string guid, CustomPacket& customPacket);
+    void ProcessReceivedPacket(CustomPacket& customPacket);
 
     void SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket);
     void SendPacketToServer(CustomPacket& responsePacket);
