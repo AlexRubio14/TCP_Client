@@ -144,24 +144,22 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 {
 	p2pClients = newClients;
 
+	// Dirección IP local y puerto de escucha
 	std::optional<sf::IpAddress> localIp = sf::IpAddress::getLocalAddress();
 	int localPort = NETWORK.GetListeningPort();
 
-	for (int i = 0; i < p2pClients.size(); ++i)
+	// Primero, los clientes con índices menores intentan conectarse a los mayores
+	for (int i = 0; i < myIndex; ++i) // Índices menores
 	{
-		if (i == myIndex) 
-			continue;
-
 		std::shared_ptr<Client>& newClient = p2pClients[i];
 		NetworkClient& network = newClient->GetNetwork();
-		std::optional<sf::IpAddress> ipAdress = sf::IpAddress::resolve(network.GetIp());
+		std::optional<sf::IpAddress> ipAddress = sf::IpAddress::resolve(network.GetIp());
 
-		std::cout << *ipAdress << std::endl;
-
-		if (!ipAdress)
+		if (!ipAddress)
 			continue;
 
-		sf::Socket::Status status = network.GetSocket().connect(*ipAdress, network.GetPort());
+		// Intentamos conectar al cliente con índice mayor
+		sf::Socket::Status status = network.GetSocket().connect(*ipAddress, network.GetPort());
 
 		if (status == sf::Socket::Status::Done)
 		{
@@ -174,6 +172,9 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 
 			std::cout << "Connected to peer " << network.GetIp() << ":" << network.GetPort() << std::endl;
 
+			std::cout << "Mi indice es" << GAME.GetReferenceClient()->GetPlayerData().GetIndex() << std::endl;
+
+			// Enviar el paquete de handshake
 			PACKET_MANAGER.SendHandshakeP2P(newClient);
 		}
 		else
@@ -182,8 +183,38 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 		}
 	}
 
-	std::cout << "Received: IP = " << p2pClients[0]->GetNetwork().GetIp() << " | Name = " << p2pClients[0]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[0]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[0]->GetNetwork().GetPort() << std::endl;
-	std::cout << "Received: IP = " << p2pClients[1]->GetNetwork().GetIp() << " | Name = " << p2pClients[1]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[1]->GetPlayerData().GetIndex() << " | Port = " << p2pClients[1]->GetNetwork().GetPort() << std::endl;
+	// Ahora, los clientes con índices mayores aceptan conexiones de los menores
+	for (int i = myIndex + 1; i < p2pClients.size(); ++i) // Índices mayores
+	{
+		std::shared_ptr<Client>& newClient = p2pClients[i];
+		NetworkClient& network = newClient->GetNetwork();
+
+		// Usamos listener para aceptar conexiones entrantes
+		sf::TcpListener listener;
+		listener.listen(network.GetPort());
+
+		std::shared_ptr<sf::TcpSocket> newSocket = std::make_shared<sf::TcpSocket>();
+		if (listener.accept(*newSocket) == sf::Socket::Status::Done)
+		{
+			newSocket->setBlocking(false);
+			std::lock_guard<std::mutex> lock(selectorMutex);
+			socketSelector.add(*newSocket);
+
+			// Asignar el socket al cliente
+			network.SetSocket(newSocket);
+
+			std::cout << "Listening for connections from " << newClient->GetNetwork().GetIp() << std::endl;
+
+			// Procesar handshake
+			PACKET_MANAGER.SendHandshakeP2P(newClient);
+		}
+		else
+		{
+			std::cerr << "Failed to accept connection for peer " << newClient->GetNetwork().GetIp() << std::endl;
+		}
+	}
+
+	std::cout << "Received: IP = " << p2pClients[0]->GetNetwork().GetIp() << " | Name = " << p2pClients[0]->GetPlayerData().GetUsername() << " | Index = " << p2pClients[0]->GetPlayerData().GetIndex() << " | Port: " << p2pClients[0]->GetNetwork().GetPort() << std::endl;
 
 	GAME.StartGame();
 	ChangeState(NetworkState::CONNECTED_TO_PEERS);
