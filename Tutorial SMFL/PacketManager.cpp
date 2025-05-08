@@ -1,4 +1,4 @@
-#include "PacketManager.h"
+﻿#include "PacketManager.h"
 #include <iostream>
 #include "EventManager.h"
 #include "NetworkManager.h"
@@ -25,7 +25,7 @@ void PacketManager::SendHandshakeP2P(const std::shared_ptr<Client>& client)
 {
 	CustomPacket customPacket(HANDSHAKE_P2P);
 	std::string responseMessage = "Hello, im the new client";
-	customPacket.packet << client->GetNetwork().GetGuid() << responseMessage;
+	customPacket.packet << client->GetNetwork().GetGuid() << client->GetNetwork().GetPort() << responseMessage;
 
 	SendPacketToClient(client, customPacket);
 }
@@ -176,7 +176,7 @@ void PacketManager::Init()
 		{
 			customPacket.packet >> ip >> name >> index >> numPort >> guid; 
 
-			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
+			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << " | Guid " << guid << std::endl;
 
 			GAME.AddClient(ip, name, index, numPort, guid);
 
@@ -248,19 +248,24 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(HANDSHAKE_P2P, [this](CustomPacket& customPacket) {
 
 		std::string guid;
+		int port;
 		std::string message;
-		customPacket.packet >> guid >> message;
+		customPacket.packet >> guid >> port >> message;
 
 
-		std::shared_ptr<Client> sender = NETWORK.GetClientByGuid(guid);
+		std::shared_ptr<Client> client = NETWORK.GetClientByGuid(guid);
 
-		if (!sender)
+		if (client == nullptr)
 		{
-			std::cerr << "HandshakeP2P: Unknown client guid " << guid << std::endl;
+			std::cerr << "HandshakeP2P: Unknown client guid " << guid << port << std::endl;
 			return;
 		}
 
-		std::cout << "Received handshake from " << sender->GetPlayerData().GetUsername()<< ": " << message << std::endl;
+		std::cout << "Received handshake from " << client->GetPlayerData().GetUsername()<< "and port: " <<  port << " : " << message << std::endl;
+
+		client->GetNetwork().SetPort(port);
+		std::cout << "Updated client port: " << port << std::endl;
+
 		});
 }
 

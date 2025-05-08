@@ -14,11 +14,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
-	if (TIME.IsTurnTimeOver())
+	/*if (TIME.IsTurnTimeOver())
 	{
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
-	}
+	}*/
 
 	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex())
 	{
@@ -102,6 +102,8 @@ void GameManager::AddClient(const std::string &ip, const std::string &name, cons
 
 	std::shared_ptr<Client> newClient = std::make_shared<Client>(networkClient, playerData);
 	clients.push_back(newClient);
+
+	std::cout << "Adding client: IP = " << ip << ", Port = " << numPort << std::endl;
 }
 
 void GameManager::RecognizeClient(int index)

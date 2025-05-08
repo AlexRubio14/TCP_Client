@@ -13,8 +13,8 @@
 
 const int SERVER_PORT = 55001;
 //const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
-//const sf::IpAddress SERVER_IP = sf::IpAddress(192, 168, 1, 144);
-const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
+const sf::IpAddress SERVER_IP = sf::IpAddress(192, 168, 1, 144);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
 
 class NetworkManager
 {
@@ -75,7 +75,12 @@ public:
     std::vector<std::shared_ptr<Client>>& GetClients() { return p2pClients; }
     int GetListeningPort() const { return listener.getLocalPort(); }
     NetworkState GetNetworkState();
+    sf::TcpListener& GetListener() { return listener; }
     std::shared_ptr<Client> GetClientByGuid(const std::string& guid);
+    std::mutex& GetSelectorMutex() { return selectorMutex; }
+    sf::SocketSelector& GetSocketSelector() { return socketSelector; }
+
+    std::shared_ptr<Client> GetClientByIp(const sf::IpAddress& ip);
 
 
 };
