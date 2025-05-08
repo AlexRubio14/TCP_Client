@@ -35,7 +35,7 @@ public:
 
 	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
 
-	void AddClient(const std::string& ip, const std::string& name, const int& index, const int& numPort);
+	void AddClient(const std::string& ip, const std::string& name, const int& index, const int& numPort, const std::string& guid);
 	void RecognizeClient(int index);
 
 	inline const std::unique_ptr<Map>& GetMap() { return map; }

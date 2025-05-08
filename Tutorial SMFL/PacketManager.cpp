@@ -21,6 +21,15 @@ void PacketManager::HandleTest(sf::Packet& packet)
 	std::cout << "Message received from server: " << message << std::endl;
 }
 
+void PacketManager::SendHandshakeP2P(const std::shared_ptr<Client>& client)
+{
+	CustomPacket customPacket(HANDSHAKE_P2P);
+	std::string responseMessage = "Hello, im the new client";
+	customPacket.packet << client->GetNetwork().GetGuid() << responseMessage;
+
+	SendPacketToClient(client, customPacket);
+}
+
 void PacketManager::SendHandshake(const std::string guid)
 {
 	CustomPacket customPacket(HANDSHAKE);
@@ -153,7 +162,7 @@ void PacketManager::Init()
 
 		int numPlayers = 2;
 
-		std::string ip, name;
+		std::string ip, name, guid;
 		int index, myIndex, numPort = -1;
 
 		GAME.Init(SCENE.GetWindow());
@@ -165,11 +174,11 @@ void PacketManager::Init()
 
 		for (int i = 0; i < numPlayers; ++i)
 		{
-			customPacket.packet >> ip >> name >> index >> numPort; 
+			customPacket.packet >> ip >> name >> index >> numPort >> guid; 
 
 			std::cout << "Received: IP = " << ip << " | Name = " << name << " | Index = " << index << " | Port = " << numPort << std::endl;
 
-			GAME.AddClient(ip, name, index, numPort);
+			GAME.AddClient(ip, name, index, numPort, guid);
 
 			std::cout << "Client added: IP = " << ip << ", Port = " << numPort << std::endl;
 		}
@@ -235,6 +244,13 @@ void PacketManager::Init()
 			}
 		}
 		});
+
+	EVENT_MANAGER.Subscribe(HANDSHAKE_P2P, [this](CustomPacket& customPacket) {
+
+		CustomPacket handshakePacket(HANDSHAKE_P2P);
+		handshakePacket.packet << ;
+		peerSocket.send(handshakePacket.packet);
+		})
 }
 
 void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)

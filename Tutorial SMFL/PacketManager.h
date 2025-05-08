@@ -15,6 +15,7 @@ private:
 
     void HandleTest(sf::Packet& packet);
 
+
 public:
     inline static PacketManager& Instance()
     {
@@ -24,6 +25,7 @@ public:
 
     void Init();
 
+    void SendHandshakeP2P(const std::shared_ptr<Client>& client);
     void SendHandshake(const std::string guid);
     void ProcessReceivedPacket(CustomPacket& customPacket);
 

@@ -173,6 +173,8 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 			}
 
 			std::cout << "Connected to peer " << network.GetIp() << ":" << network.GetPort() << std::endl;
+
+			PACKET_MANAGER.SendHandshakeP2P(newClient);
 		}
 		else
 		{
