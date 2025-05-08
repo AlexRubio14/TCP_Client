@@ -288,30 +288,6 @@ void NetworkManager::HandleNewConnections()
 
 void NetworkManager::UpdateP2PClients()
 {
-	for (std::shared_ptr<Client> client : p2pClients)
-	{
-		if (client && client->GetNetwork().GetSocket().getRemoteAddress() != sf::IpAddress::Any)
-		{
-			sf::TcpSocket& socket = client->GetNetwork().GetSocket();
-
-			if (socketSelector.isReady(socket))
-			{
-				CustomPacket customPacket;
-				sf::Socket::Status status = client->GetNetwork().GetSocket().receive(customPacket.packet);
-
-				if (status == sf::Socket::Status::Done)
-				{
-					PACKET_MANAGER.ProcessReceivedPacket(customPacket);
-				}
-				else
-				{
-					std::cerr << "Error receiving the packet: " << static_cast<int>(status) << std::endl;
-
-				}
-			}
-		}
-	}
-
 	for (std::shared_ptr<Client>& client : p2pClients)
 	{
 		if (!client) 
