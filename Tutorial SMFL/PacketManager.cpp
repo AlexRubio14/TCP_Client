@@ -246,10 +246,14 @@ void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
 
 void PacketManager::SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket)
 {
-	if (client->GetNetwork().GetSocket().send(responsePacket.packet) == sf::Socket::Status::Done)
-		std::cout << "Message sent to client: "<<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
+	sf::Socket::Status status = client->GetNetwork().GetSocket().send(responsePacket.packet);
+	if (status == sf::Socket::Status::Done)
+		std::cout << "Message sent to client: " <<client->GetNetwork().GetIp()<< " "<<client->GetPlayerData().GetUsername()<<" "<<client->GetNetwork().GetPort() << std::endl;
 	else
-		std::cerr << "Error sending the message to client" << std::endl;
+	{
+		std::cout << "The error is: " << static_cast<int>(status) << std::endl;
+		std::cerr << "Error sending the message to client" << client->GetNetwork().GetIp() << " " << client->GetPlayerData().GetUsername() << " " << client->GetNetwork().GetPort() << std::endl;
+	}
 }
 
 void PacketManager::SendPacketToServer(CustomPacket& customPacket)
