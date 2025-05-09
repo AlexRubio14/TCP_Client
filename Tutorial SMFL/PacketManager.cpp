@@ -217,16 +217,12 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(MOVE_TOKEN, [this](CustomPacket& customPacket) {
 		int value;
 		int tokenID;
-		customPacket.packet >> value >> tokenID;
-		std::cout << "Move Token with ID: " << tokenID << ", " << value << " Cells" << std::endl;
-		for (int i = 0; i < GAME.GetCurrentClient()->GetPlayerData().GetTokens().size(); i++)
-		{
-			if (GAME.GetCurrentClient()->GetPlayerData().GetTokens()[i]->GetId() == tokenID)
-			{
-				GAME.GetCurrentClient()->GetPlayerData().GetTokens()[i]->MoveToken(value);
-				return;
-			}
-		}
+		std::string color;
+		customPacket.packet >> value >> tokenID >> color;
+		std::cout << "Player with Color: " << color << ", Move Token with ID: " << tokenID << ", " << value << " Cells" << std::endl;
+
+		
+		GAME.GetCurrentClient()->GetPlayerData().GetTokens()[tokenID]->MoveToken(value);
 		});
 
 	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {

@@ -77,8 +77,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 			{
 				//Forzar sacar ficha si sale 5 y hay fichas en base
 				//std::cout << "Sacas la casilla de base" << std::endl;
-				diceValue = token->MoveToken(1);
 				SendMoveToken(1, token->GetId());
+				diceValue = token->MoveToken(1);
 				return true;
 			}
 			else
@@ -87,8 +87,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 		}
 		//Mover ficha
 		//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
-		diceValue = token->MoveToken(diceValue);
 		SendMoveToken(diceValue, token->GetId());
+		diceValue = token->MoveToken(diceValue);
 		return true;
 	}
 	else if ((diceValue == 6 || diceValue == 7) && HasTokenInSameCell())
@@ -96,8 +96,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 		if (token->GetCurrentCell()->GetTokensInCell() > 1)
 		{
 			//std::cout << "Rompes la barrera" << std::endl;
-			diceValue = token->MoveToken(diceValue);
 			SendMoveToken(diceValue, token->GetId());
+			diceValue = token->MoveToken(diceValue);
 			return true;
 		}
 		return false;
@@ -108,8 +108,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 		{
 			//Mover ficha
 			//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
-			diceValue = token->MoveToken(diceValue);
 			SendMoveToken(diceValue, token->GetId());
+			diceValue = token->MoveToken(diceValue);
 			return true;
 		}
 		return false;
@@ -175,13 +175,13 @@ void PlayerData::SendDiceValue()
 void PlayerData::SendMoveToken(int value, int tokenID)
 {
 	CustomPacket packet(MOVE_TOKEN);
-	std::cout << "Move Token with ID: " << tokenID << ", "<<value <<" Cells" << std::endl;
+	std::cout << "Player with Color: "<< GetColorString() << ", Move Token with ID: " << tokenID << ", " << value << " Cells" << std::endl;
 	for (int i = 0; i < NETWORK.GetClients().size(); i++)
 	{
 		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
 			continue;
 
-		packet.packet << value << tokenID;
+		packet.packet << value << tokenID << GetColorString();
 
 		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
 	}
