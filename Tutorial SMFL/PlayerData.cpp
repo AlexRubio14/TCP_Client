@@ -1,6 +1,9 @@
 #include "PlayerData.h"
 #include "GameManager.h"
 #include <iostream>
+#include "CustomPacket.h"
+#include "EventManager.h"
+#include "NetworkManager.h"
 
 PlayerData::PlayerData(const std::string& username, const sf::Color& color, int index)
 	: username(username), color(color), index(index), extraMoves(false), canThrowDice(false), diceValue(0)
@@ -15,7 +18,7 @@ PlayerData::PlayerData(const std::string& username, const sf::Color& color, int 
 
 	for (int i = 0; i < 4; i++)
 	{
-		std::shared_ptr<Token> token = std::make_shared<Token>(GAME.GetMap()->GetCells()[idToSpawn + i], color);
+		std::shared_ptr<Token> token = std::make_shared<Token>(GAME.GetMap()->GetCells()[idToSpawn + i], color,i);
 		tokens.push_back(token);
 	}
 }
@@ -28,23 +31,21 @@ int PlayerData::ThrowDice()
 
 void PlayerData::ControlDice()
 {
+	SendDiceValue();
 	if (AllTokensInBase() && diceValue != 5)
 	{
 		if (diceValue == 6)
 		{
 			canThrowDice = true;
-			std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base pero vuelves a tirar" << std::endl;
 			diceValue = 0;
 			return;
 		}
 		GAME.EndTurn();
-		std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base" << std::endl;
 		return;
 	}
 	canThrowDice = false;
 	if (!AnyTokenInBase() && diceValue == 6)
 		diceValue = 7;
-	std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << std::endl;
 }
 
 void PlayerData::SelectToken(sf::Vector2f mousePosition)
@@ -75,8 +76,9 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 			if (!token->GetIsInGame())
 			{
 				//Forzar sacar ficha si sale 5 y hay fichas en base
-				std::cout << "Sacas la casilla de base" << std::endl;
+				//std::cout << "Sacas la casilla de base" << std::endl;
 				diceValue = token->MoveToken(1);
+				SendMoveToken(1, token->GetId());
 				return true;
 			}
 			else
@@ -84,16 +86,18 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 
 		}
 		//Mover ficha
-		std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+		//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
 		diceValue = token->MoveToken(diceValue);
+		SendMoveToken(diceValue, token->GetId());
 		return true;
 	}
 	else if ((diceValue == 6 || diceValue == 7) && HasTokenInSameCell())
 	{
 		if (token->GetCurrentCell()->GetTokensInCell() > 1)
 		{
-			std::cout << "Rompes la barrera" << std::endl;
+			//std::cout << "Rompes la barrera" << std::endl;
 			diceValue = token->MoveToken(diceValue);
+			SendMoveToken(diceValue, token->GetId());
 			return true;
 		}
 		return false;
@@ -103,8 +107,9 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 		if (token->GetIsInGame())
 		{
 			//Mover ficha
-			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
 			diceValue = token->MoveToken(diceValue);
+			SendMoveToken(diceValue, token->GetId());
 			return true;
 		}
 		return false;
@@ -150,6 +155,36 @@ void PlayerData::ControlNextTurn(const std::shared_ptr<Token>& token)
 
 	diceValue = 0;
 	GAME.EndTurn();
+}
+
+void PlayerData::SendDiceValue()
+{
+	CustomPacket packet(PROCESS_DICE_VALUE);
+	std::cout << "Dice Value: " << diceValue << std::endl;
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << diceValue;
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
+}
+
+void PlayerData::SendMoveToken(int value, int tokenID)
+{
+	CustomPacket packet(MOVE_TOKEN);
+	std::cout << "Move Token with ID: " << tokenID << ", "<<value <<" Cells" << std::endl;
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << value << tokenID;
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
 }
 
 

@@ -57,9 +57,8 @@ void GameManager::StartTurn()
 
 void GameManager::EndTurn(bool reciveMessage)
 {
-	CustomPacket packet;
-	if(!reciveMessage)
-		EVENT_MANAGER.Emit(END_TURN, packet);
+	if (!reciveMessage)
+		SendEndTurn();
 	currentClientIndex = (currentClientIndex + 1) % clients.size();
 	currentClient = clients[currentClientIndex];
 	StartTurn();
@@ -70,6 +69,21 @@ void GameManager::StartGame()
 	currentClientIndex = 0;
 	currentClient = clients[currentClientIndex];
 	StartTurn();
+}
+
+void GameManager::SendEndTurn()
+{
+	std::cout << "End Turn" << std::endl;
+	CustomPacket packet(END_TURN);
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << "End Turn";
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
 }
 
 const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)

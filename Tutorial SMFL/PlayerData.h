@@ -28,6 +28,8 @@ public:
 	void SelectToken(sf::Vector2f mousePosition);
 	bool ControlInteraction(const std::shared_ptr<Token>& token);
 	void ControlNextTurn(const std::shared_ptr<Token>& token);
+	void SendDiceValue();
+	void SendMoveToken(int value, int tokenID);
 	inline void ResetDiceValue() { diceValue = 0; }
 
 	void Update(sf::RenderWindow& window);

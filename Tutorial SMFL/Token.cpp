@@ -2,8 +2,8 @@
 #include <iostream>
 #include "GameManager.h"
 
-Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color)
-	: currentCell(_currentCell), color(_color)
+Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color, int id)
+	: currentCell(_currentCell), color(_color), id(id)
 {
 	originCell = currentCell;
 	isInGame = false;

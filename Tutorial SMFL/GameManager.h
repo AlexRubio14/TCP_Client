@@ -32,6 +32,7 @@ public:
 	void StartTurn();
 	void EndTurn(bool reciveMessage = false);
 	void StartGame();
+	void SendEndTurn();
 
 	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
 

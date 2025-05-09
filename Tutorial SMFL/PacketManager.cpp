@@ -201,28 +201,32 @@ void PacketManager::Init()
 
 		});
 
+
 	EVENT_MANAGER.Subscribe(END_TURN, [this](CustomPacket& customPacket) {
-		std::cout << "End Turn" << std::endl;
-
-		for (int i = 0; i < NETWORK.GetClients().size(); i++)
-		{
-			if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
-				continue;
-
-			CustomPacket responsePacket(END_TURN_SUCCES);
-			responsePacket.packet << "Turn ended";
-		
-			SendPacketToClient(NETWORK.GetClients()[i], responsePacket);
-		}
-		});
-
-	EVENT_MANAGER.Subscribe(END_TURN_SUCCES, [this](CustomPacket& customPacket) {
-		std::cout << "Packet Received from other client" << std::endl;
 		std::string responseMessage;
-		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
 		std::cout << responseMessage;
 		GAME.EndTurn(true);
+		});
+
+	EVENT_MANAGER.Subscribe(PROCESS_DICE_VALUE, [this](CustomPacket& customPacket) {
+		int diceValue;
+		customPacket.packet >> diceValue;
+		std::cout << "Dice Value: " << diceValue << std::endl;
+		});
+	EVENT_MANAGER.Subscribe(MOVE_TOKEN, [this](CustomPacket& customPacket) {
+		int value;
+		int tokenID;
+		customPacket.packet >> value >> tokenID;
+		std::cout << "Move Token with ID: " << tokenID << ", " << value << " Cells" << std::endl;
+		for (int i = 0; i < GAME.GetCurrentClient()->GetPlayerData().GetTokens().size(); i++)
+		{
+			if (GAME.GetCurrentClient()->GetPlayerData().GetTokens()[i]->GetId() == tokenID)
+			{
+				GAME.GetCurrentClient()->GetPlayerData().GetTokens()[i]->MoveToken(value);
+				return;
+			}
+		}
 		});
 
 	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {
@@ -279,7 +283,7 @@ void PacketManager::Init()
 void PacketManager::ProcessReceivedPacket(CustomPacket& customPacket)
 {
 	customPacket.packet >> customPacket.type;
-	std::cout << customPacket.type << std::endl;
+	//std::cout << customPacket.type << std::endl;
 	EVENT_MANAGER.Emit(customPacket.type, customPacket);
 }
 
