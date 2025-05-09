@@ -158,6 +158,7 @@ void PacketManager::Init()
 
 	EVENT_MANAGER.Subscribe(ENTER_ROOM, [this](CustomPacket& customPacket) {
 		SendPacketToServer(customPacket);
+		std::cout << "Waiting for more players..." << std::endl;
 		});
 
 	EVENT_MANAGER.Subscribe(START_GAME, [this](CustomPacket& customPacket) {

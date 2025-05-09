@@ -221,6 +221,9 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 
 bool NetworkManager::ConnectToServer()
 {
+	if (!serverSocket) // We check if we should Reinitialize the socket because we delete the socket when client disconnects from server
+		serverSocket = std::make_shared<sf::TcpSocket>();
+
 	std::cout << serverIp << " " << serverPort << std::endl;
 
 	sf::Socket::Status status = serverSocket->connect(serverIp, serverPort);
@@ -253,11 +256,14 @@ bool NetworkManager::ConnectToServer()
 
 void NetworkManager::DisconnectServer()
 {
+
 	if (serverSocket)
 	{
 		serverSocket->disconnect();
+		selectorMutex.lock();
 		socketSelector.remove(*serverSocket);
-	}
+		selectorMutex.unlock();
+		serverSocket.reset(); 	}
 
 	ChangeState(NetworkState::DISCONNECTED);
 	std::cout << "Disconnected from server" << std::endl;
