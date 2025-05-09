@@ -222,7 +222,7 @@ void PacketManager::Init()
 		std::cout << "End turn succes" << std::endl;
 		customPacket.packet >> responseMessage;
 		std::cout << responseMessage;
-		GAME.EndTurn();
+		GAME.EndTurn(true);
 		});
 
 	EVENT_MANAGER.Subscribe(DISCONNECT, [this](CustomPacket& customPacket) {

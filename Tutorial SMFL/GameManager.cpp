@@ -55,10 +55,11 @@ void GameManager::StartTurn()
 	TIME.StartTurn();
 }
 
-void GameManager::EndTurn()
+void GameManager::EndTurn(bool reciveMessage)
 {
 	CustomPacket packet;
-	EVENT_MANAGER.Emit(END_TURN, packet);
+	if(!reciveMessage)
+		EVENT_MANAGER.Emit(END_TURN, packet);
 	currentClientIndex = (currentClientIndex + 1) % clients.size();
 	currentClient = clients[currentClientIndex];
 	StartTurn();

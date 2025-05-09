@@ -30,7 +30,7 @@ public:
 
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
 	void StartTurn();
-	void EndTurn();
+	void EndTurn(bool reciveMessage = false);
 	void StartGame();
 
 	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
