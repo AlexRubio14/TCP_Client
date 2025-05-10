@@ -6,6 +6,12 @@ void SceneManager::InitScenes(Scene* scene)
 {
 	window = new sf::RenderWindow(sf::VideoMode({ WIDTH, HEIGHT }), "Tutorial SMFL",
 		sf::Style::Titlebar | sf::Style::Close);
+
+	if (!font.openFromFile("../Assets/Font/arialceb.ttf"))
+	{
+		std::cerr << "Error: no se pudo cargar la fuente\n";
+	}
+
 	currentScene = scene;
 	currentScene->Enter(*window);
 

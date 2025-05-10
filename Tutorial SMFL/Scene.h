@@ -7,7 +7,6 @@ class Scene
 protected:
     sf::Text* currentText;
     std::string inputText;
-    sf::Font font;
     const std::size_t maxLengthName = 12;
     const std::size_t maxLengthPasword = 12;
     const std::size_t idMax = 5;
@@ -24,5 +23,4 @@ public:
     virtual void HandleEvent(sf::RenderWindow& window, const sf::Event& event);
     virtual void DetectRectangle(sf::Vector2f mousePosition) = 0;
 
-    inline sf::Font GetFont() { return font; }
 };

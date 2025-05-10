@@ -24,7 +24,7 @@ void RegisterScene::Enter(sf::RenderWindow& window)
 void RegisterScene::CreateButtons(sf::RenderWindow& window, int id)
 {
 	buttons.push_back(sf::RectangleShape());
-	buttonsTexts.push_back(sf::Text(font));
+	buttonsTexts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -63,8 +63,8 @@ void RegisterScene::CreateButtons(sf::RenderWindow& window, int id)
 void RegisterScene::CreateTextField(sf::RenderWindow& window, int id)
 {
 	textBackGround.push_back(sf::RectangleShape());
-	textsInformation.push_back(sf::Text(font));
-	texts.push_back(sf::Text(font));
+	textsInformation.push_back(sf::Text(SCENE.GetFont()));
+	texts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,

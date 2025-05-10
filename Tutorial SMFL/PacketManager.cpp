@@ -205,7 +205,7 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(END_TURN, [this](CustomPacket& customPacket) {
 		std::string responseMessage;
 		customPacket.packet >> responseMessage;
-		std::cout << responseMessage;
+		std::cout << responseMessage <<std::endl;
 		GAME.EndTurn(true);
 		});
 

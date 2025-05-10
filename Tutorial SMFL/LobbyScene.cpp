@@ -70,7 +70,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 {
 	buttons.push_back(sf::RectangleShape());
-	buttonsTexts.push_back(sf::Text(font));
+	buttonsTexts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -109,8 +109,8 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
 	textBackGround.push_back(sf::RectangleShape());
-	idInformation.push_back(sf::Text(font));
-	idInformation.push_back(sf::Text(font));
+	idInformation.push_back(sf::Text(SCENE.GetFont()));
+	idInformation.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
