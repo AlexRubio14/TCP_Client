@@ -20,7 +20,7 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 		EndTurn();
 	}*/
 
-	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex())
+	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex() && !endGame)
 	{
 		currentClient->HandleEvent(event, window);
 		HandleEvent(event, window);

@@ -31,6 +31,7 @@ public:
 	void SendDiceValue();
 	void SendMoveToken(int value, int tokenID);
 	inline void ResetDiceValue() { diceValue = 0; }
+	void SendWin();
 
 	void Update(sf::RenderWindow& window);
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);

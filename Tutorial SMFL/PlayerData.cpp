@@ -173,6 +173,16 @@ void PlayerData::SendMoveToken(int value, int tokenID)
 	}
 }
 
+void PlayerData::SendWin()
+{
+	if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() != GAME.GetCurrentClient()->GetPlayerData().GetIndex())
+		std::cout << "LOSE" << std::endl;
+	else
+		std::cout << "VICTORY" << std::endl;
+
+	GAME.SetEndGame(true);
+}
+
 
 
 std::string PlayerData::GetColorString()
@@ -250,7 +260,7 @@ void PlayerData::EraseToken(int index)
 		{
 			(*it)->ChangeTokenState(END_GAME);
 			if (AllTokensEndGame())
-				std::cout << "Has ganado" << std::endl;
+				SendWin();
 			break;
 		}
 	}
