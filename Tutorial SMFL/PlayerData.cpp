@@ -59,7 +59,7 @@ void PlayerData::SelectToken(sf::Vector2f mousePosition)
 		float dy = mousePosition.y - circleCenter.y;
 		float distanceSquared = dx * dx + dy * dy;
 
-		if (distanceSquared <= radius * radius)
+		if (distanceSquared <= radius * radius && token->GetIsInGame() != END_GAME)
 		{
 			if (ControlInteraction(token))
 				ControlNextTurn(token);
@@ -73,7 +73,7 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 	{
 		if (AnyTokenInBase())
 		{
-			if (!token->GetIsInGame())
+			if (token->GetIsInGame() == IN_BASE)
 			{
 				//Forzar sacar ficha si sale 5 y hay fichas en base
 				//std::cout << "Sacas la casilla de base" << std::endl;
@@ -104,7 +104,7 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 	}
 	else
 	{
-		if (token->GetIsInGame())
+		if (token->GetIsInGame() == IN_GAME)
 		{
 			//Mover ficha
 			//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
@@ -128,20 +128,6 @@ void PlayerData::ControlNextTurn(const std::shared_ptr<Token>& token)
 	else if ((diceValue == 10 || diceValue == 20) && extraMoves)
 	{
 		extraMoves = false;
-		if (diceValue == 10)
-		{
-			auto it = std::find(tokens.begin(), tokens.end(), token);
-			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
-			{
-				token->GetCurrentCell()->AddTokensInCell(-1);
-				tokens.erase(it);
-				if (tokens.empty())
-				{
-					std::cout << "Has ganado" << std::endl;
-				}
-			}
-		}
-
 		if (!AllTokensInBase())
 		{
 			std::cout << "Muevete otra vez" << std::endl;
@@ -256,10 +242,26 @@ void PlayerData::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 
 }
 
+void PlayerData::EraseToken(int index)
+{
+	for (auto it = tokens.begin(); it != tokens.end(); ++it)
+	{
+		if ((*it)->GetId() == index)
+		{
+			(*it)->ChangeTokenState(END_GAME);
+			if (AllTokensEndGame())
+			{
+				std::cout << "Has ganado" << std::endl;
+			}
+			break;
+		}
+	}
+}
+
 bool PlayerData::AllTokensInBase() const
 {
 	for (const std::shared_ptr<Token>& token : tokens)
-		if (token->GetIsInGame())
+		if (token->GetIsInGame() == IN_GAME)
 			return false;
 
 	return true;
@@ -268,7 +270,16 @@ bool PlayerData::AllTokensInBase() const
 bool PlayerData::AnyTokenInBase() const
 {
 	for (const std::shared_ptr<Token>& token : tokens)
-		if (!token->GetIsInGame())
+		if (token->GetIsInGame() == IN_BASE)
+			return true;
+
+	return false;
+}
+
+bool PlayerData::AllTokensEndGame() const
+{
+	for (const std::shared_ptr<Token>& token : tokens)
+		if (token->GetIsInGame() == END_GAME)
 			return true;
 
 	return false;

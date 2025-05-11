@@ -6,7 +6,7 @@ Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color, int id)
 	: currentCell(_currentCell), color(_color), id(id)
 {
 	originCell = currentCell;
-	isInGame = false;
+	ChangeTokenState(IN_BASE);
 	shape = sf::CircleShape(TOKEN_RADIUS);
 	shape.setFillColor(_color);
 	shape.setPosition(currentCell->SetTokenInCell());
@@ -26,7 +26,7 @@ int Token::MoveToken(int moves)
 	if (currentCell == originCell)
 	{
 		moves = 1;
-		isInGame = true;
+		ChangeTokenState(IN_GAME);
 	}
 
 	int newDiceValue = moves;
@@ -83,7 +83,9 @@ int Token::MoveToken(int moves)
 	{
 		std::cout << "La ficha ha llegado al final" << std::endl;
 		newDiceValue = 10;
+		GAME.GetCurrentClient()->GetPlayerData().EraseToken(id);
 		GAME.GetCurrentClient()->GetPlayerData().SetExtraMoves(true);
+
 	}
 
 	return newDiceValue;
@@ -91,7 +93,7 @@ int Token::MoveToken(int moves)
 
 void Token::ReturnToOriginalCell()
 {
-	isInGame = false;
+	ChangeTokenState(IN_BASE);
 	currentCell->AddTokensInCell(-1);
 	currentCell = originCell;
 	shape.setPosition(currentCell->SetTokenInCell());

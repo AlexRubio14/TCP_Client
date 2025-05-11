@@ -34,9 +34,11 @@ public:
 
 	void Update(sf::RenderWindow& window);
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
+	void EraseToken(int index);
 
 	bool AllTokensInBase() const;
 	bool AnyTokenInBase() const;
+	bool AllTokensEndGame() const;
 	bool HasTokenInSameCell();
 
 	const std::string& GetUsername() const { return username; }
