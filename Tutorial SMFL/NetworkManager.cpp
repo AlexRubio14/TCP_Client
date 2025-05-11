@@ -132,10 +132,7 @@ void NetworkManager::ChangeState(NetworkState newState)
 void NetworkManager::StartListening()
 {
 	if (listener.listen(0) == sf::Socket::Status::Done)
-	{
 		std::cout << "Listening on port: " << listener.getLocalPort() << std::endl;
-		std::cout << "Listening on port: " << GetListeningPort() << std::endl;
-	}
 	else
 		std::cerr << "Failed to start Listening" << std::endl;
 }

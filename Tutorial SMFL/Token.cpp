@@ -46,7 +46,7 @@ int Token::MoveToken(int moves)
 		else
 			cellToGo = currentCell->GetNextCells()[0];
 		
-		if (cellToGo->GetTokensInCell() == 2)
+		if (cellToGo->GetTokensInCell() == 2 && !hasFinished)
 		{
 			std::cout << "Hay una barrera delante" << std::endl;
 			newDiceValue = 0;
@@ -63,7 +63,7 @@ int Token::MoveToken(int moves)
 
 	shape.setPosition(currentCell->SetTokenInCell());
 
-	if (currentCell->GetTokensInCell() > 1)
+	if (currentCell->GetTokensInCell() > 1 && !hasFinished)
 	{
 		std::shared_ptr<Token> token = GAME.TokenInPosition(this);
 		if (token->GetColor() != color)
