@@ -250,9 +250,7 @@ void PlayerData::EraseToken(int index)
 		{
 			(*it)->ChangeTokenState(END_GAME);
 			if (AllTokensEndGame())
-			{
 				std::cout << "Has ganado" << std::endl;
-			}
 			break;
 		}
 	}
@@ -279,10 +277,10 @@ bool PlayerData::AnyTokenInBase() const
 bool PlayerData::AllTokensEndGame() const
 {
 	for (const std::shared_ptr<Token>& token : tokens)
-		if (token->GetIsInGame() == END_GAME)
-			return true;
+		if (token->GetIsInGame() != END_GAME)
+			return false;
 
-	return false;
+	return true;
 }
 
 bool PlayerData::HasTokenInSameCell()
