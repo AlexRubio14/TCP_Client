@@ -369,7 +369,7 @@ void NetworkManager::UpdateP2PClients()
 
 			std::lock_guard<std::mutex> lock(selectorMutex);
 			socketSelector.remove(socket);
-			// Clean client from vector
+			GAME.ErasePlayer(client->GetPlayerData().GetIndex());
 			break;
 		}
 		default:

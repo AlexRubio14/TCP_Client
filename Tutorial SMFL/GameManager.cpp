@@ -19,11 +19,10 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
 	}*/
-
+	HandleEvent(event, window);
 	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex() && !endGame)
 	{
 		currentClient->HandleEvent(event, window);
-		HandleEvent(event, window);
 	}
 
 	window.clear();
@@ -91,6 +90,21 @@ void GameManager::ResetGame()
 	clients.clear();
 	currentClient = nullptr;
 	endGame = false;
+}
+
+void GameManager::ErasePlayer(int index)
+{
+	for (auto it = clients.begin(); it != clients.end(); )
+	{
+		if ((*it)->GetPlayerData().GetIndex() == index)
+		{
+			if (*it == currentClient)
+				EndTurn();
+			clients.erase(it);
+		}
+		else
+			++it;
+	}
 }
 
 const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)

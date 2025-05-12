@@ -36,6 +36,8 @@ public:
 	void SendEndTurn();
 	void ResetGame();
 
+	void ErasePlayer(int index);
+
 	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
 
 	void AddClient(const std::string& ip, const std::string& name, const int& index, const int& numPort, const std::string& guid);
