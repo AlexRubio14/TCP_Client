@@ -4,6 +4,7 @@
 #include "CustomPacket.h"
 #include "EventManager.h"
 #include "NetworkManager.h"
+#include "SceneManager.h"
 
 PlayerData::PlayerData(const std::string& username, const sf::Color& color, int index)
 	: username(username), color(color), index(index), extraMoves(false), canThrowDice(false), diceValue(0)
@@ -175,12 +176,25 @@ void PlayerData::SendMoveToken(int value, int tokenID)
 
 void PlayerData::SendWin()
 {
+	std::cout << "The player: " << GAME.GetCurrentClient()->GetPlayerData().GetColorString() << " wins the game.";
+
 	if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() != GAME.GetCurrentClient()->GetPlayerData().GetIndex())
-		std::cout << "LOSE" << std::endl;
+		std::cout << " Congratulations!" << std::endl;
 	else
-		std::cout << "VICTORY" << std::endl;
+		std::cout << "Next time maybe you win!" << std::endl;
 
 	GAME.SetEndGame(true);
+
+	NETWORK.DisconnectAllPeers();
+
+	// Crear un hilo para esperar 3 segundos y reconectar
+	std::thread reconnectThread([]() {
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+		NETWORK.ConnectToServer();
+		SCENE.ChangeScene(new RegisterScene());
+		});
+
+	reconnectThread.detach(); // No bloquea, y deja que el hilo se ejecute solo
 }
 
 

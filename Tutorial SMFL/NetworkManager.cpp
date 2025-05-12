@@ -93,7 +93,6 @@ void NetworkManager::Update()
 
 	stateMutex.lock();
 	state = currentState;
-	std::cout << static_cast<int>(currentState) << std::endl;
 	stateMutex.unlock();
 
 	switch (state) {
@@ -260,7 +259,8 @@ void NetworkManager::DisconnectServer()
 		selectorMutex.lock();
 		socketSelector.remove(*serverSocket);
 		selectorMutex.unlock();
-		serverSocket.reset(); 	}
+		serverSocket.reset(); 	
+	}
 
 	ChangeState(NetworkState::DISCONNECTED);
 	std::cout << "Disconnected from server" << std::endl;
@@ -274,6 +274,7 @@ void NetworkManager::DisconnectAllPeers()
 		{
 			client->GetNetwork().GetSocket().disconnect();
 			socketSelector.remove(client->GetNetwork().GetSocket());
+			client->GetNetwork().GetSocket();
 		}
 	}
 
