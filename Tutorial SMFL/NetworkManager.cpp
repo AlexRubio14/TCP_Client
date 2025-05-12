@@ -367,8 +367,12 @@ void NetworkManager::UpdateP2PClients()
 		{
 			std::cerr << "[P2P] Client disconnected: "<< *socket.getRemoteAddress() << ":" << socket.getRemotePort() << std::endl;
 
-			std::lock_guard<std::mutex> lock(selectorMutex);
-			socketSelector.remove(socket);
+				socket.disconnect();
+			{
+				std::lock_guard<std::mutex> lock(selectorMutex);
+				socketSelector.remove(socket);
+			}
+
 			GAME.ErasePlayer(client->GetPlayerData().GetIndex());
 			break;
 		}

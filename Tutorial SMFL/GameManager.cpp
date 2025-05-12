@@ -94,16 +94,25 @@ void GameManager::ResetGame()
 
 void GameManager::ErasePlayer(int index)
 {
-	for (auto it = clients.begin(); it != clients.end(); )
+	auto playerIt = std::find_if(clients.begin(), clients.end(),
+		[index](const std::shared_ptr<Client> client) {
+			return client->GetPlayerData().GetIndex() == index;
+		});
+
+	if (playerIt == clients.end())
+		return;
+
+	std::shared_ptr<Client> targetClient = *playerIt;
+	
+	if (targetClient == currentClient)
+		EndTurn();
+
+
+	clients.erase(playerIt);
 	{
-		if ((*it)->GetPlayerData().GetIndex() == index)
-		{
-			if (*it == currentClient)
-				EndTurn();
-			clients.erase(it);
-		}
-		else
-			++it;
+		std::lock_guard selectorMutex(NETWORK.GetSelectorMutex());
+		std::vector<std::shared_ptr<Client>>& networkClients = NETWORK.GetClients();
+		networkClients.erase(std::remove(networkClients.begin(), networkClients.end(), targetClient), networkClients.end());
 	}
 }
 
