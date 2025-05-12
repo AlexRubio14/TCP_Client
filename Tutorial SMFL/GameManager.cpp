@@ -86,6 +86,11 @@ void GameManager::SendEndTurn()
 	}
 }
 
+void GameManager::ResetGame()
+{
+	clients.clear();
+}
+
 const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
 {
 	for (const std::shared_ptr<Client>& client : clients)

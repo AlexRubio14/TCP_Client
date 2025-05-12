@@ -184,12 +184,12 @@ void PlayerData::SendWin()
 		std::cout << "Next time maybe you win!" << std::endl;
 
 	GAME.SetEndGame(true);
-
 	NETWORK.DisconnectAllPeers();
 
 	// Crear un hilo para esperar 3 segundos y reconectar
 	std::thread reconnectThread([]() {
 		std::this_thread::sleep_for(std::chrono::seconds(3));
+		GAME.ResetGame();
 		NETWORK.ConnectToServer();
 		SCENE.ChangeScene(new RegisterScene());
 		});

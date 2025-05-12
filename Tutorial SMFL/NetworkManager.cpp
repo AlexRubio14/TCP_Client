@@ -280,6 +280,7 @@ void NetworkManager::DisconnectAllPeers()
 
 	p2pClients.clear();
 
+
 	ChangeState(NetworkState::DISCONNECTED);
 	std::cout << "Disconnected from all peers" << std::endl;
 }
