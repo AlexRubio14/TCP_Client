@@ -18,6 +18,7 @@ private:
 	Scene* currentScene;
 
 	sf::RenderWindow* window;
+	sf::Font font;
 
 public:
 	inline static SceneManager& Instance()
@@ -33,5 +34,6 @@ public:
 
 	inline Scene* GetCurrentScene() { return currentScene; }
 	inline sf::RenderWindow& GetWindow() { return *window; }
+	inline const sf::Font& GetFont() const { return font; }
 };
 

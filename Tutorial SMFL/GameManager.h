@@ -13,6 +13,7 @@ private:
 	std::shared_ptr<Client> currentClient;
 	std::shared_ptr<Client> referenceClient;
 	int currentClientIndex;
+	bool endGame;
 
 	GameManager() = default;
 	GameManager(const GameManager&) = delete;
@@ -30,8 +31,12 @@ public:
 
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
 	void StartTurn();
-	void EndTurn();
+	void EndTurn(bool reciveMessage = false);
 	void StartGame();
+	void SendEndTurn();
+	void ResetGame();
+
+	void ErasePlayer(int index);
 
 	const std::shared_ptr<Token>& TokenInPosition(Token* tokenChecked);
 
@@ -42,5 +47,8 @@ public:
 	inline const std::shared_ptr<Client>& GetCurrentClient() { return currentClient; }
 	inline const std::vector<std::shared_ptr<Client>>& GetClients() { return clients; }
 	inline const std::shared_ptr<Client>& GetReferenceClient() { return referenceClient; }
+	
+	inline void SetEndGame(bool state) { endGame = state; }
+
 };
 

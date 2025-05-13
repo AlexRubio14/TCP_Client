@@ -28,13 +28,18 @@ public:
 	void SelectToken(sf::Vector2f mousePosition);
 	bool ControlInteraction(const std::shared_ptr<Token>& token);
 	void ControlNextTurn(const std::shared_ptr<Token>& token);
+	void SendDiceValue();
+	void SendMoveToken(int value, int tokenID);
 	inline void ResetDiceValue() { diceValue = 0; }
+	void SendWin();
 
 	void Update(sf::RenderWindow& window);
 	void HandleEvent(const sf::Event& event, sf::RenderWindow& window);
+	void EraseToken(int index);
 
 	bool AllTokensInBase() const;
 	bool AnyTokenInBase() const;
+	bool AllTokensEndGame() const;
 	bool HasTokenInSameCell();
 
 	const std::string& GetUsername() const { return username; }

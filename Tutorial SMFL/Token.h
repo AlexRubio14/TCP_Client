@@ -5,17 +5,25 @@
 
 #define TOKEN_RADIUS 15
 
+enum TokenState
+{
+	IN_BASE,
+	IN_GAME,
+	END_GAME
+};
+
 class Token
 {
 private:
 	std::shared_ptr<Cell> currentCell;
 	std::shared_ptr<Cell> originCell;
-	bool isInGame;
+	TokenState tokenState;
+	int id;
 	const sf::Color color;
 	sf::CircleShape shape;
 
 public:
-	Token(std::shared_ptr<Cell> _currentCell, const sf::Color _color);
+	Token(std::shared_ptr<Cell> _currentCell, const sf::Color _color, int id);
 
 	void Render(sf::RenderWindow& window);
 	int MoveToken(int moves);
@@ -23,10 +31,11 @@ public:
 
 	inline std::shared_ptr<Cell> GetCurrentCell() const { return currentCell; }
 	inline std::shared_ptr<Cell> GetOriginCell() const { return originCell; }
-	inline bool GetIsInGame() const { return isInGame; }
+	inline TokenState GetIsInGame() const { return tokenState; }
 	inline sf::CircleShape& GetShape() { return shape; }
 	inline sf::Color GetColor() const { return color; }
+	inline int GetId() const { return id; }
 
-	inline void SetIsInGame(const bool state) { isInGame = state; }
+	inline void ChangeTokenState(const TokenState state) { tokenState = state; }
 	inline void SetCurrentCell(std::shared_ptr<Cell> _currentCell) { currentCell = _currentCell; }
 };

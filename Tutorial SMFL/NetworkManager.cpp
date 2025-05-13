@@ -93,7 +93,6 @@ void NetworkManager::Update()
 
 	stateMutex.lock();
 	state = currentState;
-	std::cout << static_cast<int>(currentState) << std::endl;
 	stateMutex.unlock();
 
 	switch (state) {
@@ -132,10 +131,7 @@ void NetworkManager::ChangeState(NetworkState newState)
 void NetworkManager::StartListening()
 {
 	if (listener.listen(0) == sf::Socket::Status::Done)
-	{
 		std::cout << "Listening on port: " << listener.getLocalPort() << std::endl;
-		std::cout << "Listening on port: " << GetListeningPort() << std::endl;
-	}
 	else
 		std::cerr << "Failed to start Listening" << std::endl;
 }
@@ -221,6 +217,9 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 
 bool NetworkManager::ConnectToServer()
 {
+	if (!serverSocket) // We check if we should Reinitialize the socket because we delete the socket when client disconnects from server
+		serverSocket = std::make_shared<sf::TcpSocket>();
+
 	std::cout << serverIp << " " << serverPort << std::endl;
 
 	sf::Socket::Status status = serverSocket->connect(serverIp, serverPort);
@@ -253,10 +252,14 @@ bool NetworkManager::ConnectToServer()
 
 void NetworkManager::DisconnectServer()
 {
+
 	if (serverSocket)
 	{
 		serverSocket->disconnect();
+		selectorMutex.lock();
 		socketSelector.remove(*serverSocket);
+		selectorMutex.unlock();
+		serverSocket.reset(); 	
 	}
 
 	ChangeState(NetworkState::DISCONNECTED);
@@ -271,10 +274,12 @@ void NetworkManager::DisconnectAllPeers()
 		{
 			client->GetNetwork().GetSocket().disconnect();
 			socketSelector.remove(client->GetNetwork().GetSocket());
+			client->GetNetwork().GetSocket();
 		}
 	}
 
 	p2pClients.clear();
+
 
 	ChangeState(NetworkState::DISCONNECTED);
 	std::cout << "Disconnected from all peers" << std::endl;
@@ -362,9 +367,13 @@ void NetworkManager::UpdateP2PClients()
 		{
 			std::cerr << "[P2P] Client disconnected: "<< *socket.getRemoteAddress() << ":" << socket.getRemotePort() << std::endl;
 
-			std::lock_guard<std::mutex> lock(selectorMutex);
-			socketSelector.remove(socket);
-			// Clean client from vector
+				socket.disconnect();
+			{
+				std::lock_guard<std::mutex> lock(selectorMutex);
+				socketSelector.remove(socket);
+			}
+
+			GAME.ErasePlayer(client->GetPlayerData().GetIndex());
 			break;
 		}
 		default:

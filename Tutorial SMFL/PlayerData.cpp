@@ -1,6 +1,10 @@
 #include "PlayerData.h"
 #include "GameManager.h"
 #include <iostream>
+#include "CustomPacket.h"
+#include "EventManager.h"
+#include "NetworkManager.h"
+#include "SceneManager.h"
 
 PlayerData::PlayerData(const std::string& username, const sf::Color& color, int index)
 	: username(username), color(color), index(index), extraMoves(false), canThrowDice(false), diceValue(0)
@@ -15,7 +19,7 @@ PlayerData::PlayerData(const std::string& username, const sf::Color& color, int 
 
 	for (int i = 0; i < 4; i++)
 	{
-		std::shared_ptr<Token> token = std::make_shared<Token>(GAME.GetMap()->GetCells()[idToSpawn + i], color);
+		std::shared_ptr<Token> token = std::make_shared<Token>(GAME.GetMap()->GetCells()[idToSpawn + i], color,i);
 		tokens.push_back(token);
 	}
 }
@@ -28,23 +32,21 @@ int PlayerData::ThrowDice()
 
 void PlayerData::ControlDice()
 {
+	SendDiceValue();
 	if (AllTokensInBase() && diceValue != 5)
 	{
 		if (diceValue == 6)
 		{
 			canThrowDice = true;
-			std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base pero vuelves a tirar" << std::endl;
 			diceValue = 0;
 			return;
 		}
 		GAME.EndTurn();
-		std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << " Pero no puede sacar una casilla de su base" << std::endl;
 		return;
 	}
 	canThrowDice = false;
 	if (!AnyTokenInBase() && diceValue == 6)
 		diceValue = 7;
-	std::cout << "Client del color: " << GetColorString() << " Ha sacado un: " << diceValue << std::endl;
 }
 
 void PlayerData::SelectToken(sf::Vector2f mousePosition)
@@ -58,7 +60,7 @@ void PlayerData::SelectToken(sf::Vector2f mousePosition)
 		float dy = mousePosition.y - circleCenter.y;
 		float distanceSquared = dx * dx + dy * dy;
 
-		if (distanceSquared <= radius * radius)
+		if (distanceSquared <= radius * radius && token->GetIsInGame() != END_GAME)
 		{
 			if (ControlInteraction(token))
 				ControlNextTurn(token);
@@ -72,10 +74,11 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 	{
 		if (AnyTokenInBase())
 		{
-			if (!token->GetIsInGame())
+			if (token->GetIsInGame() == IN_BASE)
 			{
 				//Forzar sacar ficha si sale 5 y hay fichas en base
-				std::cout << "Sacas la casilla de base" << std::endl;
+				//std::cout << "Sacas la casilla de base" << std::endl;
+				SendMoveToken(1, token->GetId());
 				diceValue = token->MoveToken(1);
 				return true;
 			}
@@ -84,7 +87,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 
 		}
 		//Mover ficha
-		std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+		//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+		SendMoveToken(diceValue, token->GetId());
 		diceValue = token->MoveToken(diceValue);
 		return true;
 	}
@@ -92,7 +96,8 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 	{
 		if (token->GetCurrentCell()->GetTokensInCell() > 1)
 		{
-			std::cout << "Rompes la barrera" << std::endl;
+			//std::cout << "Rompes la barrera" << std::endl;
+			SendMoveToken(diceValue, token->GetId());
 			diceValue = token->MoveToken(diceValue);
 			return true;
 		}
@@ -100,10 +105,11 @@ bool PlayerData::ControlInteraction(const std::shared_ptr<Token>& token)
 	}
 	else
 	{
-		if (token->GetIsInGame())
+		if (token->GetIsInGame() == IN_GAME)
 		{
 			//Mover ficha
-			std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			//std::cout << "Mueves el token: " << diceValue << " casillas" << std::endl;
+			SendMoveToken(diceValue, token->GetId());
 			diceValue = token->MoveToken(diceValue);
 			return true;
 		}
@@ -123,20 +129,6 @@ void PlayerData::ControlNextTurn(const std::shared_ptr<Token>& token)
 	else if ((diceValue == 10 || diceValue == 20) && extraMoves)
 	{
 		extraMoves = false;
-		if (diceValue == 10)
-		{
-			auto it = std::find(tokens.begin(), tokens.end(), token);
-			if (it != tokens.end() && token->GetCurrentCell()->GetNextCells().empty())
-			{
-				token->GetCurrentCell()->AddTokensInCell(-1);
-				tokens.erase(it);
-				if (tokens.empty())
-				{
-					std::cout << "Has ganado" << std::endl;
-				}
-			}
-		}
-
 		if (!AllTokensInBase())
 		{
 			std::cout << "Muevete otra vez" << std::endl;
@@ -150,6 +142,59 @@ void PlayerData::ControlNextTurn(const std::shared_ptr<Token>& token)
 
 	diceValue = 0;
 	GAME.EndTurn();
+}
+
+void PlayerData::SendDiceValue()
+{
+	CustomPacket packet(PROCESS_DICE_VALUE);
+	std::cout << "Dice Value: " << diceValue << std::endl;
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << diceValue;
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
+}
+
+void PlayerData::SendMoveToken(int value, int tokenID)
+{
+	CustomPacket packet(MOVE_TOKEN);
+	std::cout << "Player with Color: "<< GetColorString() << ", Move Token with ID: " << tokenID << ", " << value << " Cells" << std::endl;
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << value << tokenID << GetColorString();
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
+}
+
+void PlayerData::SendWin()
+{
+	std::cout << "The player: " << GAME.GetCurrentClient()->GetPlayerData().GetColorString() << " wins the game.";
+
+	if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() != GAME.GetCurrentClient()->GetPlayerData().GetIndex())
+		std::cout << " Congratulations!" << std::endl;
+	else
+		std::cout << "Next time maybe you win!" << std::endl;
+
+	GAME.SetEndGame(true);
+	NETWORK.DisconnectAllPeers();
+
+	// Crear un hilo para esperar 3 segundos y reconectar
+	std::thread reconnectThread([]() {
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+		GAME.ResetGame();
+		NETWORK.ConnectToServer();
+		SCENE.ChangeScene(new RegisterScene());
+		});
+
+	reconnectThread.detach(); // No bloquea, y deja que el hilo se ejecute solo
 }
 
 
@@ -221,10 +266,24 @@ void PlayerData::HandleEvent(const sf::Event& event, sf::RenderWindow& window)
 
 }
 
+void PlayerData::EraseToken(int index)
+{
+	for (auto it = tokens.begin(); it != tokens.end(); ++it)
+	{
+		if ((*it)->GetId() == index)
+		{
+			(*it)->ChangeTokenState(END_GAME);
+			if (AllTokensEndGame())
+				SendWin();
+			break;
+		}
+	}
+}
+
 bool PlayerData::AllTokensInBase() const
 {
 	for (const std::shared_ptr<Token>& token : tokens)
-		if (token->GetIsInGame())
+		if (token->GetIsInGame() == IN_GAME)
 			return false;
 
 	return true;
@@ -233,10 +292,19 @@ bool PlayerData::AllTokensInBase() const
 bool PlayerData::AnyTokenInBase() const
 {
 	for (const std::shared_ptr<Token>& token : tokens)
-		if (!token->GetIsInGame())
+		if (token->GetIsInGame() == IN_BASE)
 			return true;
 
 	return false;
+}
+
+bool PlayerData::AllTokensEndGame() const
+{
+	for (const std::shared_ptr<Token>& token : tokens)
+		if (token->GetIsInGame() != END_GAME)
+			return false;
+
+	return true;
 }
 
 bool PlayerData::HasTokenInSameCell()

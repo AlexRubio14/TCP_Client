@@ -19,11 +19,10 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
 	}*/
-
-	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex())
+	HandleEvent(event, window);
+	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex() && !endGame)
 	{
 		currentClient->HandleEvent(event, window);
-		HandleEvent(event, window);
 	}
 
 	window.clear();
@@ -55,10 +54,10 @@ void GameManager::StartTurn()
 	TIME.StartTurn();
 }
 
-void GameManager::EndTurn()
+void GameManager::EndTurn(bool reciveMessage)
 {
-	CustomPacket packet;
-	EVENT_MANAGER.Emit(END_TURN, packet);
+	if (!reciveMessage)
+		SendEndTurn();
 	currentClientIndex = (currentClientIndex + 1) % clients.size();
 	currentClient = clients[currentClientIndex];
 	StartTurn();
@@ -69,6 +68,52 @@ void GameManager::StartGame()
 	currentClientIndex = 0;
 	currentClient = clients[currentClientIndex];
 	StartTurn();
+}
+
+void GameManager::SendEndTurn()
+{
+	std::cout << "End Turn" << std::endl;
+	CustomPacket packet(END_TURN);
+	for (int i = 0; i < NETWORK.GetClients().size(); i++)
+	{
+		if (GAME.GetReferenceClient()->GetPlayerData().GetIndex() == NETWORK.GetClients()[i]->GetPlayerData().GetIndex())
+			continue;
+
+		packet.packet << "End Turn";
+
+		PACKET_MANAGER.SendPacketToClient(NETWORK.GetClients()[i], packet);
+	}
+}
+
+void GameManager::ResetGame()
+{
+	clients.clear();
+	currentClient = nullptr;
+	endGame = false;
+}
+
+void GameManager::ErasePlayer(int index)
+{
+	auto playerIt = std::find_if(clients.begin(), clients.end(),
+		[index](const std::shared_ptr<Client> client) {
+			return client->GetPlayerData().GetIndex() == index;
+		});
+
+	if (playerIt == clients.end())
+		return;
+
+	std::shared_ptr<Client> targetClient = *playerIt;
+	
+	if (targetClient == currentClient)
+		EndTurn();
+
+	map->SetName(targetClient->GetPlayerData().GetIndex(), " ");
+	clients.erase(playerIt);
+	{
+		std::lock_guard selectorMutex(NETWORK.GetSelectorMutex());
+		std::vector<std::shared_ptr<Client>>& networkClients = NETWORK.GetClients();
+		networkClients.erase(std::remove(networkClients.begin(), networkClients.end(), targetClient), networkClients.end());
+	}
 }
 
 const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
