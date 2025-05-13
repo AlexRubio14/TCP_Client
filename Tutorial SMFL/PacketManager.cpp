@@ -236,17 +236,6 @@ void PacketManager::Init()
 			customPacket.packet >> responseMessage;
 			SendPacketToServer(customPacket);
 		}
-		else if (networkState == NetworkState::CONNECTED_TO_PEERS)
-		{
-			CustomPacket responsePacket(PEER_DISCONNECTED);
-			responseMessage = GAME.GetReferenceClient()->GetPlayerData().GetIndex();
-			responsePacket.packet >> responseMessage;
-
-			for (std::shared_ptr<Client> client : NETWORK.GetClients())
-			{
-				SendPacketToClient(client, responsePacket);
-			}
-		}
 		});
 
 	EVENT_MANAGER.Subscribe(HANDSHAKE_P2P, [this](CustomPacket& customPacket) {
