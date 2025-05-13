@@ -107,7 +107,7 @@ void GameManager::ErasePlayer(int index)
 	if (targetClient == currentClient)
 		EndTurn();
 
-
+	map->SetName(targetClient->GetPlayerData().GetIndex(), " ");
 	clients.erase(playerIt);
 	{
 		std::lock_guard selectorMutex(NETWORK.GetSelectorMutex());

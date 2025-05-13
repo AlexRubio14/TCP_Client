@@ -164,8 +164,6 @@ void PacketManager::Init()
 	EVENT_MANAGER.Subscribe(START_GAME, [this](CustomPacket& customPacket) {
 		std::cout << "Start Game" << std::endl;
 
-		int numPlayers = 2;
-
 		std::string ip, name, guid;
 		int index, myIndex, numPort = -1;
 
@@ -176,7 +174,7 @@ void PacketManager::Init()
 
 		customPacket.packet >> myIndex;
 
-		for (int i = 0; i < numPlayers; ++i)
+		for (int i = 0; i < NUM_PLAYERS; ++i)
 		{
 			customPacket.packet >> ip >> name >> index >> numPort >> guid; 
 
