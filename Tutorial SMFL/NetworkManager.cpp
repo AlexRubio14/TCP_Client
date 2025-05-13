@@ -30,7 +30,15 @@ void NetworkManager::HandleServerCommunication()
 				}
 				else
 				{
-					std::cerr << "Error receiving the packet: " << static_cast<int>(status) << std::endl;
+					std::cerr << "The server has disconnected" << std::endl;
+					serverSocket->disconnect();
+
+					{
+						std::lock_guard<std::mutex> lock(selectorMutex);
+						socketSelector.remove(*serverSocket);
+					}
+
+					serverSocket.reset();
 				}
 			}
 		}
