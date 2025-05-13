@@ -9,9 +9,12 @@ void NetworkManager::HandleServerCommunication()
 {
 	while (true)
 	{
-		stateMutex.lock();
-		NetworkState state = currentState;
-		stateMutex.unlock();
+		NetworkState state;
+
+		{
+			std::lock_guard lock(stateMutex);
+			state = currentState;
+		}
 
 		if (state != NetworkState::CONNECTED_TO_SERVER)
 			break;
@@ -50,11 +53,15 @@ void NetworkManager::HandleP2PCommunication()
 
 	while (true)
 	{
+		NetworkState state;
+
 		{
-			std::lock_guard<std::mutex> lock(stateMutex);
-			if (currentState != NetworkState::CONNECTED_TO_PEERS)
-				break;
+			std::lock_guard lock(stateMutex);
+			state = currentState;
 		}
+
+		if (state != NetworkState::CONNECTED_TO_PEERS)
+				break;
 
 		if (socketSelector.wait(sf::seconds(0.1f)))
 		{
@@ -99,9 +106,10 @@ void NetworkManager::Update()
 {
 	NetworkState state;
 
-	stateMutex.lock();
-	state = currentState;
-	stateMutex.unlock();
+	{
+		std::lock_guard lock(stateMutex);
+		state = currentState;
+	}
 
 	switch (state) {
 	case NetworkState::CONNECTED_TO_SERVER:
@@ -129,11 +137,12 @@ void NetworkManager::Stop()
 
 void NetworkManager::ChangeState(NetworkState newState)
 {
-	stateMutex.lock();
-	std::cout << "state changed to :" << static_cast<int>(newState) << std::endl;
-	currentState = newState;
+	{
+		std::lock_guard lock(stateMutex);
+		std::cout << "state changed to :" << static_cast<int>(newState) << std::endl;
+		currentState = newState;
+	}
 	RefreshSelector();
-	stateMutex.unlock();
 }
 
 void NetworkManager::StartListening()
@@ -200,8 +209,11 @@ void NetworkManager::StartClientConnections(const std::vector<std::shared_ptr<Cl
 		if (listener.accept(*newSocket) == sf::Socket::Status::Done)
 		{
 			newSocket->setBlocking(false);
-			std::lock_guard<std::mutex> lock(selectorMutex);
-			socketSelector.add(*newSocket);
+			
+			{
+				std::lock_guard<std::mutex> lock(selectorMutex);
+				socketSelector.add(*newSocket);
+			}
 
 			// Asignar el socket al cliente
 			network.SetSocket(newSocket);
@@ -264,9 +276,10 @@ void NetworkManager::DisconnectServer()
 	if (serverSocket)
 	{
 		serverSocket->disconnect();
-		selectorMutex.lock();
-		socketSelector.remove(*serverSocket);
-		selectorMutex.unlock();
+		{
+			std::lock_guard lock(selectorMutex);
+			socketSelector.remove(*serverSocket);
+		}
 		serverSocket.reset(); 	
 	}
 
@@ -393,7 +406,7 @@ void NetworkManager::UpdateP2PClients()
 
 void NetworkManager::RefreshSelector()
 {
-	selectorMutex.lock();
+	std::lock_guard lock(selectorMutex);
 	socketSelector.clear();
 
 	if (currentState == NetworkState::CONNECTED_TO_SERVER)
@@ -407,17 +420,13 @@ void NetworkManager::RefreshSelector()
 
 		socketSelector.add(listener);
 	}
-	selectorMutex.unlock();
 }
 
 NetworkState NetworkManager::GetNetworkState()
 {
-	NetworkState state;
-	stateMutex.lock();
-	state = currentState;
-	stateMutex.unlock();
 
-	return state;;
+	std::lock_guard lock(stateMutex);
+	return currentState;
 }
 
 std::shared_ptr<Client> NetworkManager::GetClientByGuid(const std::string& guid)

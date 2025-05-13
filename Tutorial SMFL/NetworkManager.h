@@ -32,7 +32,6 @@ private:
     sf::TcpListener listener;
 
     std::thread networkThread;
-    std::mutex connectionMutex;
     std::mutex stateMutex;
     std::mutex selectorMutex;
 
