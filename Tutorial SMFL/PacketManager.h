@@ -3,7 +3,7 @@
 #include "Client.h"
 
 #define PACKET_MANAGER PacketManager::Instance()
-const int NUM_PLAYERS = 2;
+const int NUM_PLAYERS = 4;
 
 class PacketManager
 {
