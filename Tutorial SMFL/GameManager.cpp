@@ -14,11 +14,12 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
-	/*if (TIME.IsTurnTimeOver())
+	if (TIME.IsTurnTimeOver())
 	{
 		std::cout << "Se acabó el tiempo, cambio de turno";
 		EndTurn();
-	}*/
+	}
+
 	HandleEvent(event, window);
 	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex() && !endGame)
 	{
