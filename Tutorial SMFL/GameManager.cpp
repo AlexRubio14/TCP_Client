@@ -14,11 +14,11 @@ void GameManager::Update(sf::RenderWindow& window, const sf::Event& event)
 	if (currentClient == nullptr)
 		return;
 
-	if (TIME.IsTurnTimeOver())
-	{
-		std::cout << "Se acabó el tiempo, cambio de turno";
-		EndTurn();
-	}
+	//if (TIME.IsTurnTimeOver())
+	//{
+	//	std::cout << "Se acabó el tiempo, cambio de turno";
+	//	EndTurn();
+	//}
 
 	HandleEvent(event, window);
 	if (referenceClient->GetPlayerData().GetIndex() == currentClient->GetPlayerData().GetIndex() && !endGame)
@@ -103,17 +103,27 @@ void GameManager::ErasePlayer(int index)
 	if (playerIt == clients.end())
 		return;
 
-	std::shared_ptr<Client> targetClient = *playerIt;
-	
-	if (targetClient == currentClient)
-		EndTurn();
+	std::vector<std::shared_ptr<Client>>& networkClients = NETWORK.GetClients();
 
-	map->SetName(targetClient->GetPlayerData().GetIndex(), " ");
+	auto clientIt = std::find_if(networkClients.begin(), networkClients.end(),
+		[index](const std::shared_ptr<Client> client) {
+			return client->GetPlayerData().GetIndex() == index;
+		});
+
+	if (clientIt == networkClients.end())
+		return;
+
+	map->SetName(playerIt->get()->GetPlayerData().GetIndex(), " ");
+
+	if (playerIt->get())
+	{
+		std::cout << "El puntero es valido";
+	}
+
 	clients.erase(playerIt);
 	{
 		std::lock_guard selectorMutex(NETWORK.GetSelectorMutex());
-		std::vector<std::shared_ptr<Client>>& networkClients = NETWORK.GetClients();
-		networkClients.erase(std::remove(networkClients.begin(), networkClients.end(), targetClient), networkClients.end());
+		networkClients.erase(clientIt);
 	}
 }
 
