@@ -13,8 +13,8 @@
 
 const int SERVER_PORT = 55001;
 //const sf::IpAddress SERVER_IP = sf::IpAddress(93, 176, 163, 135);
-const sf::IpAddress SERVER_IP = sf::IpAddress(192, 168, 1, 144);
-//const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
+//const sf::IpAddress SERVER_IP = sf::IpAddress(192, 168, 1, 144);
+const sf::IpAddress SERVER_IP = sf::IpAddress(10,40,1,99);
 //const sf::IpAddress SERVER_IP = sf::IpAddress(192,168,1,71);
 
 class NetworkManager
@@ -32,7 +32,6 @@ private:
     sf::TcpListener listener;
 
     std::thread networkThread;
-    std::mutex connectionMutex;
     std::mutex stateMutex;
     std::mutex selectorMutex;
 

@@ -120,12 +120,11 @@ void GameManager::ErasePlayer(int index)
 		std::cout << "El puntero es valido";
 	}
 
+	clients.erase(playerIt);
 	{
 		std::lock_guard selectorMutex(NETWORK.GetSelectorMutex());
 		networkClients.erase(clientIt);
 	}
-
-	clients.erase(playerIt);
 }
 
 const std::shared_ptr<Token>& GameManager::TokenInPosition(Token* tokenChecked)
