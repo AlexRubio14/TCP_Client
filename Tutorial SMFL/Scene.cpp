@@ -1,12 +1,9 @@
 #include "Scene.h"
+#include "SceneManager.h"
 
 Scene::Scene()
 {
-	if (!font.openFromFile("../Assets/Font/arialceb.ttf"))
-	{
-		std::cerr << "Error: no se pudo cargar la fuente\n";
-	}
-	currentText = new sf::Text(font);
+	currentText = new sf::Text(SCENE.GetFont());
 }
 
 Scene::~Scene()

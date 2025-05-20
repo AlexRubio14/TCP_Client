@@ -3,6 +3,7 @@
 #include "Client.h"
 
 #define PACKET_MANAGER PacketManager::Instance()
+const int NUM_PLAYERS = 4;
 
 class PacketManager
 {
@@ -15,6 +16,7 @@ private:
 
     void HandleTest(sf::Packet& packet);
 
+
 public:
     inline static PacketManager& Instance()
     {
@@ -24,8 +26,9 @@ public:
 
     void Init();
 
+    void SendHandshakeP2P(const std::shared_ptr<Client>& client);
     void SendHandshake(const std::string guid);
-    void ProcessPacket(std::string guid, CustomPacket& customPacket);
+    void ProcessReceivedPacket(CustomPacket& customPacket);
 
     void SendPacketToClient(const std::shared_ptr<Client> client, CustomPacket& responsePacket);
     void SendPacketToServer(CustomPacket& responsePacket);

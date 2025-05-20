@@ -51,7 +51,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(CREATE_ROOM);
 				customPacket.packet << idInformation[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(CREATE_ROOM, " ", customPacket);
+				EVENT_MANAGER.Emit(CREATE_ROOM, customPacket);
 				std::cout << "Create room Send" << std::endl;
 			}
 			else if (i == 1)
@@ -59,7 +59,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(JOIN_ROOM);
 				customPacket.packet << idInformation[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(JOIN_ROOM, " ", customPacket);
+				EVENT_MANAGER.Emit(JOIN_ROOM, customPacket);
 				std::cout << "Join room Send" << std::endl;
 			}
 		}
@@ -70,7 +70,7 @@ void LobbyScene::DetectRectangle(sf::Vector2f mousePosition)
 void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 {
 	buttons.push_back(sf::RectangleShape());
-	buttonsTexts.push_back(sf::Text(font));
+	buttonsTexts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -109,8 +109,8 @@ void LobbyScene::CreateButtons(sf::RenderWindow& window, int id)
 void LobbyScene::CreateTextField(sf::RenderWindow& window)
 {
 	textBackGround.push_back(sf::RectangleShape());
-	idInformation.push_back(sf::Text(font));
-	idInformation.push_back(sf::Text(font));
+	idInformation.push_back(sf::Text(SCENE.GetFont()));
+	idInformation.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,

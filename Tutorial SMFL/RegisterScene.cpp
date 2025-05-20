@@ -24,7 +24,7 @@ void RegisterScene::Enter(sf::RenderWindow& window)
 void RegisterScene::CreateButtons(sf::RenderWindow& window, int id)
 {
 	buttons.push_back(sf::RectangleShape());
-	buttonsTexts.push_back(sf::Text(font));
+	buttonsTexts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -63,8 +63,8 @@ void RegisterScene::CreateButtons(sf::RenderWindow& window, int id)
 void RegisterScene::CreateTextField(sf::RenderWindow& window, int id)
 {
 	textBackGround.push_back(sf::RectangleShape());
-	textsInformation.push_back(sf::Text(font));
-	texts.push_back(sf::Text(font));
+	textsInformation.push_back(sf::Text(SCENE.GetFont()));
+	texts.push_back(sf::Text(SCENE.GetFont()));
 
 	sf::Vector2f position(
 		window.getSize().x / 2.f,
@@ -150,7 +150,7 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(REGISTER);
 				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(REGISTER, " ", customPacket);
+				EVENT_MANAGER.Emit(REGISTER, customPacket);
 				std::cout << "Register Send" << std::endl;
 			}
 			else if (i == 1) 
@@ -158,7 +158,7 @@ void RegisterScene::DetectRectangle(sf::Vector2f mousePosition)
 				CustomPacket customPacket(LOGIN);
 				customPacket.packet << texts[0].getString().toAnsiString() << texts[1].getString().toAnsiString();
 
-				EVENT_MANAGER.Emit(LOGIN, " ", customPacket);
+				EVENT_MANAGER.Emit(LOGIN, customPacket);
 				std::cout << "Login Send" << std::endl;
 			}
 		}

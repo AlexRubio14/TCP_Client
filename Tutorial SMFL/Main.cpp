@@ -5,10 +5,12 @@
 void main()
 {
 	srand(time(NULL));
-	if(NETWORK.ConnectServer())
+	NETWORK.Init();
+	
+	if (NETWORK.ConnectToServer())
 	{
+		NETWORK.Start();
 		SCENE.InitScenes(new RegisterScene());
 		SCENE.Update();
 	}
-	NETWORK.DisconnectClient();
 }

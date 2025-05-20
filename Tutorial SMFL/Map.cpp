@@ -82,7 +82,7 @@ void Map::CreateBases()
 
 void Map::SetClientsName()
 {
-	font = SCENE.GetCurrentScene()->GetFont();
+	font = SCENE.GetFont();
 	sf::RectangleShape square = squares[0];
 
 	for (int i = 0; i< 4; i++)

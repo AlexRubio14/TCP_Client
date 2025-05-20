@@ -2,11 +2,11 @@
 #include <iostream>
 #include "GameManager.h"
 
-Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color)
-	: currentCell(_currentCell), color(_color)
+Token::Token(std::shared_ptr<Cell> _currentCell, sf::Color _color, int id)
+	: currentCell(_currentCell), color(_color), id(id)
 {
 	originCell = currentCell;
-	isInGame = false;
+	ChangeTokenState(IN_BASE);
 	shape = sf::CircleShape(TOKEN_RADIUS);
 	shape.setFillColor(_color);
 	shape.setPosition(currentCell->SetTokenInCell());
@@ -26,7 +26,7 @@ int Token::MoveToken(int moves)
 	if (currentCell == originCell)
 	{
 		moves = 1;
-		isInGame = true;
+		ChangeTokenState(IN_GAME);
 	}
 
 	int newDiceValue = moves;
@@ -46,7 +46,7 @@ int Token::MoveToken(int moves)
 		else
 			cellToGo = currentCell->GetNextCells()[0];
 		
-		if (cellToGo->GetTokensInCell() == 2)
+		if (cellToGo->GetTokensInCell() == 2 && !hasFinished)
 		{
 			std::cout << "Hay una barrera delante" << std::endl;
 			newDiceValue = 0;
@@ -63,13 +63,13 @@ int Token::MoveToken(int moves)
 
 	shape.setPosition(currentCell->SetTokenInCell());
 
-	if (currentCell->GetTokensInCell() > 1)
+	if (currentCell->GetTokensInCell() > 1 && !hasFinished)
 	{
 		std::shared_ptr<Token> token = GAME.TokenInPosition(this);
 		if (token->GetColor() != color)
 		{
 			token->ReturnToOriginalCell();
-			GAME.GetCurrentClient()->SetExtraMoves(true);
+			GAME.GetCurrentClient()->GetPlayerData().SetExtraMoves(true);
 			return 20;
 		}
 		else if (token != nullptr)
@@ -83,7 +83,9 @@ int Token::MoveToken(int moves)
 	{
 		std::cout << "La ficha ha llegado al final" << std::endl;
 		newDiceValue = 10;
-		GAME.GetCurrentClient()->SetExtraMoves(true);
+		GAME.GetCurrentClient()->GetPlayerData().EraseToken(id);
+		GAME.GetCurrentClient()->GetPlayerData().SetExtraMoves(true);
+
 	}
 
 	return newDiceValue;
@@ -91,7 +93,7 @@ int Token::MoveToken(int moves)
 
 void Token::ReturnToOriginalCell()
 {
-	isInGame = false;
+	ChangeTokenState(IN_BASE);
 	currentCell->AddTokensInCell(-1);
 	currentCell = originCell;
 	shape.setPosition(currentCell->SetTokenInCell());
